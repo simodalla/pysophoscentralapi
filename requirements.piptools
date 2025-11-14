@@ -1,0 +1,19 @@
+# Runtime dependencies for pysophoscentralapi
+# Compile with: uv pip compile requirements.piptools -o requirements.txt
+
+# HTTP Client
+httpx>=0.26.0
+
+# Data Validation and Settings
+pydantic>=2.5.0
+pydantic-settings>=2.1.0
+
+# CLI Framework
+click>=8.1.0
+rich>=13.7.0
+colorama>=0.4.6
+
+# Configuration
+tomli>=2.0.1; python_version < "3.11"
+python-dotenv>=1.0.0
+
