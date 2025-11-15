@@ -5,7 +5,7 @@ in Sophos Central API responses.
 """
 
 from collections.abc import AsyncIterator, Callable
-from typing import Any, TypeVar
+from typing import Any, Generic, TypeVar
 
 from pysophoscentralapi.core.exceptions import PaginationError
 from pysophoscentralapi.core.models import PaginatedResponse
@@ -14,7 +14,7 @@ from pysophoscentralapi.core.models import PaginatedResponse
 T = TypeVar("T")
 
 
-class Paginator:
+class Paginator(Generic[T]):
     """Cursor-based paginator for Sophos APIs.
 
     This class handles pagination through API responses, providing
