@@ -10,6 +10,14 @@ This document provides a comprehensive list of all Sophos Central API endpoints 
 - ❌ Not Planned
 - 🔄 Needs Update
 
+## Interface Support
+
+**All API endpoints support both interfaces:**
+- **Async (Primary)**: `await client.endpoint.list_endpoints()`
+- **Sync (Wrapper)**: `client_sync.endpoint.list_endpoints()` (no await)
+
+Implementation priority: Async first, then sync wrapper.
+
 ---
 
 ## Endpoint API v1

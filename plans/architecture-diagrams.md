@@ -4,6 +4,50 @@ This document provides visual representations of the system architecture, data f
 
 ---
 
+## 0. Dual Interface Architecture (Async + Sync)
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    User Code                             │
+│                                                          │
+│  ┌──────────────────┐         ┌──────────────────┐     │
+│  │  Async Interface │         │  Sync Interface   │     │
+│  │  (async/await)   │         │  (blocking)       │     │
+│  └────────┬─────────┘         └────────┬─────────┘     │
+│           │                             │               │
+└───────────┼─────────────────────────────┼───────────────┘
+            │                             │
+            │                             │ asyncio.run()
+            ▼                             ▼
+┌───────────────────────────┐  ┌─────────────────────────┐
+│   Async Implementation    │◄─│    Sync Wrappers        │
+│   (Primary)               │  │    (Thin Layer)         │
+│                           │  │                         │
+│  ├─ HTTPClient (async)    │  │  ├─ HTTPClientSync      │
+│  ├─ AuthProvider (async)  │  │  ├─ AuthProviderSync   │
+│  ├─ Paginator (async)     │  │  ├─ PaginatorSync      │
+│  └─ API Clients (async)   │  │  └─ API ClientsSync    │
+└───────────┬───────────────┘  └─────────────────────────┘
+            │
+            │ All share same
+            ▼
+┌─────────────────────────────────────────────────────────┐
+│              Shared Components                           │
+│  - Configuration (pydantic models)                       │
+│  - Exceptions (all sync)                                 │
+│  - Data Models (pydantic - sync)                         │
+└─────────────────────────────────────────────────────────┘
+
+Usage Patterns:
+───────────────
+Async (concurrent):     Sync (sequential):
+  async with client:      with client_sync:
+    await client.get()      client.get()
+    await client.post()     client.post()
+```
+
+---
+
 ## 1. System Overview
 
 ```

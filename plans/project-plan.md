@@ -74,12 +74,18 @@ pysophoscentralapi/
 │       │
 │       ├── core/              # Core infrastructure
 │       │   ├── __init__.py
-│       │   ├── client.py          # Base HTTP client
-│       │   ├── auth.py            # Authentication handlers
+│       │   ├── client.py          # Base HTTP client (async)
+│       │   ├── auth.py            # Authentication handlers (async)
 │       │   ├── config.py          # Configuration management
 │       │   ├── exceptions.py      # Custom exceptions
 │       │   ├── models.py          # Shared data models
-│       │   └── pagination.py      # Pagination utilities
+│       │   └── pagination.py      # Pagination utilities (async)
+│       │
+│       ├── sync/              # Synchronous interface wrappers
+│       │   ├── __init__.py
+│       │   ├── client.py          # Sync HTTP client wrapper
+│       │   ├── auth.py            # Sync auth wrapper
+│       │   └── pagination.py      # Sync pagination wrapper
 │       │
 │       ├── api/               # API client modules
 │       │   ├── __init__.py
@@ -658,49 +664,58 @@ Follow Semantic Versioning (SemVer):
 
 Please indicate that a phase is done and which parts when you're finished. Update this file accordingly.
 
-### Phase 1: Foundation (Weeks 1-2) ✅ COMPLETE
+### Phase 1: Foundation (Weeks 1-2) ✅ COMPLETE (with sync wrapper pending)
 - [x] Project structure setup
 - [x] Core infrastructure (HTTP client, auth, config)
 - [x] Exception hierarchy
 - [x] Base models and utilities
 - [x] Development environment setup
 - [x] Initial testing framework
+- [ ] **NEW**: Sync wrapper module for dual interface support
 
-**Completed:** All foundational infrastructure is in place including:
+**Completed:** All foundational async infrastructure is in place including:
 - Complete project structure with pyproject.toml, ruff.toml, pytest.ini
 - Exception hierarchy with 15+ custom exceptions
 - Base models with Pydantic (Token, PaginatedResponse, PageInfo, etc.)
 - Configuration management with TOML and environment variable support
-- OAuth2 authentication with token caching
-- HTTP client with retry logic, rate limiting, and exponential backoff
-- Pagination utilities for cursor-based pagination
+- OAuth2 authentication with token caching (async)
+- HTTP client with retry logic, rate limiting, and exponential backoff (async)
+- Pagination utilities for cursor-based pagination (async)
 - Testing framework with 20 passing unit tests
 - All code passes ruff formatting and linting checks
 
+**Pending Addition**:
+- Sync wrapper module (`sync.py`) to provide synchronous interface
+- This will be added after Phase 2-3 when API clients are implemented
+- Allows both `async`/`await` and blocking sync usage patterns
+
 ### Phase 2: API Implementation - Endpoint API (Weeks 3-4)
-- [ ] Endpoint management operations
-- [ ] Endpoint actions (scan, isolate, etc.)
-- [ ] Tamper protection
-- [ ] Settings management
-- [ ] Endpoint API unit tests
+- [ ] Endpoint management operations (async)
+- [ ] Endpoint actions (scan, isolate, etc.) (async)
+- [ ] Tamper protection (async)
+- [ ] Settings management (async)
+- [ ] Endpoint API unit tests (async)
 - [ ] API models and validation
+- [ ] Sync wrapper for Endpoint API
 
 ### Phase 3: API Implementation - Common API (Weeks 5-6)
-- [ ] Alert management
-- [ ] Tenant operations
-- [ ] Admin management
-- [ ] Role management
-- [ ] Common API unit tests
+- [ ] Alert management (async)
+- [ ] Tenant operations (async)
+- [ ] Admin management (async)
+- [ ] Role management (async)
+- [ ] Common API unit tests (async)
 - [ ] Integration between APIs
+- [ ] Sync wrapper for Common API
 
 ### Phase 4: CLI Implementation (Weeks 7-8)
 - [ ] CLI framework setup
 - [ ] Command structure
-- [ ] Endpoint API commands
-- [ ] Common API commands
+- [ ] Endpoint API commands (async by default)
+- [ ] Common API commands (async by default)
 - [ ] Configuration commands
 - [ ] Output formatting (table, JSON, CSV)
-- [ ] CLI tests
+- [ ] `--sync` flag implementation for sync mode
+- [ ] CLI tests (both async and sync modes)
 
 ### Phase 5: Export & Formatting (Week 9)
 - [ ] JSON exporter
@@ -782,10 +797,41 @@ Please indicate that a phase is done and which parts when you're finished. Updat
 
 ---
 
-## 15. Open Questions & Considerations
+## 15. Technical Decisions & Open Questions
 
-### Technical Decisions Needed:
-1. **Async vs Sync API**: Should we provide both async and sync interfaces?
+### Decisions Made:
+
+#### 1. **Async vs Sync API** ✅ DECIDED
+**Decision**: YES - Provide both async and sync interfaces
+
+**Implementation Strategy**:
+- **Async interface is primary and default**: All core functionality built async-first
+- **Sync interface via wrapper**: Use `asyncio.run()` to wrap async calls
+- **Library usage**: Both interfaces available, user chooses which to import
+- **CLI usage**: Async by default, optional `--sync` flag for sync mode
+
+**Architecture**:
+```python
+# Async (primary)
+async with SophosClient(config) as client:
+    endpoints = await client.endpoint.list_endpoints()
+
+# Sync (wrapper)
+with SophosClientSync(config) as client:
+    endpoints = client.endpoint.list_endpoints()  # No await needed
+```
+
+**Benefits**:
+- Flexibility for different use cases
+- Easier integration with sync codebases
+- Async performance for concurrent operations
+- Single async implementation to maintain
+
+**Implementation Location**: `src/pysophoscentralapi/sync/` module with wrapper classes
+
+---
+
+### Technical Decisions Still Needed:
 2. **Pagination Strategy**: Auto-fetch all pages vs manual pagination control?
 3. **Caching**: Should we cache API responses? If yes, what's the TTL?
 4. **Partner vs Organization API**: Do we need both whoami flows?

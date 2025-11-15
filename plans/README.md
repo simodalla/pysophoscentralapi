@@ -116,6 +116,31 @@ This directory contains comprehensive planning documentation for the PySophosCen
 
 ---
 
+### [Sync Implementation Guide](./sync-implementation-guide.md) 🆕
+**Purpose**: Detailed guide for implementing synchronous wrappers around async code
+
+**Contains**:
+- Async-first, sync-wrapper pattern explanation
+- SyncWrapper base class template
+- Complete implementation examples:
+  - HTTPClientSync wrapper
+  - OAuth2ClientCredentialsSync wrapper
+  - PaginatorSync wrapper
+- Testing strategy (test async thoroughly, sync lightly)
+- CLI integration with `--sync` flag
+- Best practices and anti-patterns
+- Implementation checklist by phase
+- Module structure
+
+**When to Use**:
+- Implementing sync wrappers (Phases 2-4)
+- Understanding the dual interface design
+- Adding new API client wrappers
+- Testing sync functionality
+- CLI mode selection implementation
+
+---
+
 ## 🚀 Getting Started with These Plans
 
 ### For Project Leads

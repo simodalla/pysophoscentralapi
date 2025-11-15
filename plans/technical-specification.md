@@ -1,5 +1,118 @@
 # PySophosCentralApi - Technical Specification
 
+## 0. Dual Interface Architecture (Async + Sync)
+
+### Overview
+
+PySophosCentralApi provides **both asynchronous and synchronous interfaces**:
+- **Async interface (primary)**: Built with `async`/`await`, optimal for performance
+- **Sync interface (wrapper)**: Synchronous wrapper around async code for ease of use
+
+### Design Pattern
+
+The library follows the **async-first, sync-wrapper** pattern:
+
+```python
+# Primary async implementation
+class HTTPClient:
+    async def request(...) -> dict: ...
+    async def get(...) -> dict: ...
+
+# Synchronous wrapper
+class HTTPClientSync:
+    def __init__(self, async_client: HTTPClient):
+        self._async_client = async_client
+        self._loop = None
+    
+    def request(...) -> dict:
+        return self._run_async(self._async_client.request(...))
+    
+    def _run_async(self, coro):
+        """Execute async coroutine synchronously"""
+        return asyncio.run(coro)
+```
+
+### Usage Examples
+
+**Async (Recommended for concurrent operations):**
+```python
+import asyncio
+from pysophoscentralapi import SophosClient
+from pysophoscentralapi.core.config import Config
+
+async def main():
+    config = Config.from_file()
+    async with SophosClient(config) as client:
+        # Async operations with await
+        endpoints = await client.endpoint.list_endpoints()
+        alerts = await client.alerts.list_alerts()
+        
+        # Concurrent operations
+        results = await asyncio.gather(
+            client.endpoint.get("id-1"),
+            client.endpoint.get("id-2"),
+            client.endpoint.get("id-3"),
+        )
+
+asyncio.run(main())
+```
+
+**Sync (For simple scripts and sync codebases):**
+```python
+from pysophoscentralapi.sync import SophosClientSync
+from pysophoscentralapi.core.config import Config
+
+config = Config.from_file()
+with SophosClientSync(config) as client:
+    # Blocking operations, no await needed
+    endpoints = client.endpoint.list_endpoints()
+    alerts = client.alerts.list_alerts()
+    
+    # Sequential operations (no concurrent execution)
+    for endpoint_id in ["id-1", "id-2", "id-3"]:
+        result = client.endpoint.get(endpoint_id)
+```
+
+### CLI Mode Selection
+
+The CLI supports both modes via a flag:
+
+```bash
+# Async mode (default - better performance)
+pysophos endpoint list
+
+# Sync mode (explicit flag)
+pysophos --sync endpoint list
+```
+
+### Implementation Guidelines
+
+1. **All core functionality is async-first**
+2. **Sync wrappers are thin** - just call `asyncio.run()` on async methods
+3. **Context managers** - both async (`async with`) and sync (`with`) supported
+4. **Testing** - test async implementation thoroughly, sync wrappers lightly
+5. **Documentation** - show both patterns, recommend async for performance
+
+### Module Structure
+
+```
+pysophoscentralapi/
+├── core/              # Async implementations (primary)
+│   ├── client.py
+│   ├── auth.py
+│   └── pagination.py
+├── sync/              # Sync wrappers
+│   ├── __init__.py
+│   ├── client.py      # Wraps core.client
+│   ├── auth.py        # Wraps core.auth
+│   └── pagination.py  # Wraps core.pagination
+└── api/
+    ├── endpoint/      # Async API clients
+    └── common/
+```
+
+---
+
 ## 1. API Authentication & Authorization
 
 ### 1.1 OAuth2 Client Credentials Flow
