@@ -128,7 +128,8 @@ class OutputFormatter:
         Args:
             message: Error message
         """
-        self.console.print(f"[red]✗[/red] {message}", file=sys.stderr)
+        error_console = Console(stderr=True, highlight=False)
+        error_console.print(f"[red]✗[/red] {message}")
 
     def print_warning(self, message: str) -> None:
         """Print warning message.
