@@ -119,14 +119,14 @@ class Alert(SophosBaseModel):
 
     id: str
     allowed_actions: list[str] = Field(default_factory=list, alias="allowedActions")
-    category: AlertCategory
+    category: str  # Changed from AlertCategory enum to str for API compatibility
     description: str
     group_key: str = Field(alias="groupKey")
     managed_agent: ManagedAgent | None = Field(None, alias="managedAgent")
     person: Person | None = None
-    product: AlertProduct
+    product: str  # Changed from AlertProduct enum to str for API compatibility
     raised_at: datetime = Field(alias="raisedAt")
-    severity: AlertSeverity
+    severity: str  # Changed from AlertSeverity enum to str for API compatibility
     tenant: TenantInfo
     type: str
     data: dict | None = None

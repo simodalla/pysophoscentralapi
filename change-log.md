@@ -23,6 +23,9 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - **Tenant Endpoint 404**: Added helpful error message explaining Partner vs Organization credentials
+- **Alert Model Validation**: Changed `category`, `severity`, and `product` fields from strict enums to strings for API compatibility
+  - Sophos API returns values outside the documented enum values
+  - Changed to flexible string fields to prevent validation errors
 - Fixed CLI test failures by correcting mock patches (`Config.from_file` → `load_config`)
 - All 323 tests now passing (up from 321)
 
