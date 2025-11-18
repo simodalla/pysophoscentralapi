@@ -9,15 +9,20 @@ All notable changes to this project will be documented in this file.
 - **Error Message Improvements**: Enhanced CLI error messages with actionable tips
   - Authentication errors now suggest running `pysophos config test`
   - API errors now display correlation IDs for support
+  - 404 errors on tenant/admin/role endpoints explain Partner vs Organization credentials
   - Unexpected errors suggest using `--debug` flag
 - **Package Configuration**: Updated `pyproject.toml` with Python 3.13 support
+- **API Credentials Documentation**: Created `docs/api-credentials.md` explaining Partner vs Organization credentials
 
 ### Changed
-- **Error Handling**: Improved error messages in `cli/utils.py` with helpful tips
-- **README**: Updated test and coverage badges (321 tests, 74% coverage)
+- **Error Handling**: Enhanced `cli/utils.py` with Partner/Organization credential detection
+- **Config Test**: Enhanced `pysophos config test` to display API access level (Partner vs Organization)
+- **API Documentation**: Updated `tenants.py` docstrings to note Partner-level requirement
+- **README**: Updated test and coverage badges (323 tests, 75% coverage)
 - **Test Fixes**: Fixed CLI tests to use correct `load_config` patching
 
 ### Fixed
+- **Tenant Endpoint 404**: Added helpful error message explaining Partner vs Organization credentials
 - Fixed CLI test failures by correcting mock patches (`Config.from_file` → `load_config`)
 - All 323 tests now passing (up from 321)
 
@@ -26,6 +31,7 @@ All notable changes to this project will be documented in this file.
 - ✅ **All code quality checks passing**
 - ✅ **Package ready for PyPI publication**
 - ✅ **Release checklist complete**
+- ✅ **Improved error messages for credential issues**
 
 ## [Unreleased - CLI Fix] - 2025-11-18
 

@@ -186,6 +186,21 @@ def test(ctx: click.Context, config_file: str | None) -> None:
         formatter.print_info(f"  ID Type: {whoami.id_type}")
         formatter.print_info(f"  Global API: {whoami.api_host_global}")
         formatter.print_info(f"  Data Region API: {whoami.api_host_data_region}")
+
+        # Display access level information
+        if whoami.id_type.lower() == "partner":
+            formatter.print_success(
+                "\n  Access Level: Partner (Full tenant management available)"
+            )
+        elif whoami.id_type.lower() == "organization":
+            formatter.print_warning(
+                "\n  Access Level: Organization (Limited to own organization data)"
+            )
+            formatter.print_info(
+                "    Note: Tenant/Admin/Role endpoints require Partner-level credentials"
+            )
+        else:
+            formatter.print_info(f"\n  Access Level: {whoami.id_type}")
     except Exception as e:
         formatter.print_error(f"✗ Whoami request failed: {e}")
         return

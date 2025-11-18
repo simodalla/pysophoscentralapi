@@ -49,6 +49,19 @@ def handle_errors(func: Callable) -> Callable:
             formatter.print_error(f"API error: {e}")
             if hasattr(e, "status_code"):
                 formatter.print_info(f"Status code: {e.status_code}")
+                # Special handling for 404 on tenant/admin/role endpoints
+                if e.status_code == 404 and any(
+                    cmd in sys.argv for cmd in ["tenants", "admins", "roles"]
+                ):
+                    formatter.print_warning(
+                        "\nNote: Tenant/Admin/Role management requires Partner-level API credentials."
+                    )
+                    formatter.print_info(
+                        "Organization-level credentials can only access their own organization data."
+                    )
+                    formatter.print_info(
+                        "Check your API credential type with: pysophos config test"
+                    )
             if hasattr(e, "correlation_id") and e.correlation_id:
                 formatter.print_info(f"Correlation ID: {e.correlation_id}")
             sys.exit(1)

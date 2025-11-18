@@ -41,6 +41,10 @@ class TenantsAPI:
     ) -> PaginatedResponse[Tenant]:
         """List tenants with optional filtering.
 
+        **Note**: This endpoint requires **Partner-level API credentials**.
+        Organization-level credentials will receive a 404 error as they can
+        only access their own organization data, not list tenants.
+
         Args:
             filters: Optional filters to apply to the listing
 
@@ -48,6 +52,7 @@ class TenantsAPI:
             Paginated response containing tenants
 
         Raises:
+            ResourceNotFoundError: If using Organization-level credentials (404)
             APIError: If API returns an error
 
         Example:
@@ -71,6 +76,8 @@ class TenantsAPI:
     async def get_tenant(self, tenant_id: str) -> Tenant:
         """Get a specific tenant by ID.
 
+        **Note**: This endpoint requires **Partner-level API credentials**.
+
         Args:
             tenant_id: The tenant ID
 
@@ -78,7 +85,7 @@ class TenantsAPI:
             Tenant information
 
         Raises:
-            ResourceNotFoundError: If tenant not found
+            ResourceNotFoundError: If tenant not found or using Organization-level credentials
             APIError: If API returns an error
 
         Example:
