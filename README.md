@@ -49,6 +49,25 @@ export SOPHOS_CLIENT_ID="your-client-id"
 export SOPHOS_CLIENT_SECRET="your-client-secret"
 ```
 
+You can also specify a custom configuration file location:
+
+```bash
+# Use a custom config file
+pysophos --config-file /path/to/my-config.toml endpoint list
+
+# Or set it via environment variable
+export SOPHOS_CONFIG_FILE=/path/to/my-config.toml
+pysophos endpoint list
+```
+
+**Configuration Priority (highest to lowest):**
+1. Command-line `--config-file` option
+2. `SOPHOS_CONFIG_FILE` environment variable
+3. `./config.toml` (current directory)
+4. `~/.config/pysophos/config.toml` (default)
+5. `~/.pysophos/config.toml` (alternative)
+6. Environment variables (`SOPHOS_CLIENT_ID`, `SOPHOS_CLIENT_SECRET`, etc.)
+
 ### CLI Usage
 
 ```bash
@@ -66,6 +85,9 @@ pysophos alerts list --severity high
 
 # List tenants
 pysophos tenants list
+
+# Use custom config file
+pysophos --config-file /path/to/config.toml endpoint list
 ```
 
 ### Library Usage (Async)

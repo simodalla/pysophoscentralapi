@@ -5,6 +5,7 @@ import sys
 from collections.abc import Callable
 from contextlib import contextmanager
 from functools import wraps
+from pathlib import Path
 from typing import Any
 
 import click
@@ -14,6 +15,7 @@ from pysophoscentralapi.core.auth import OAuth2ClientCredentials
 from pysophoscentralapi.core.config import Config
 from pysophoscentralapi.core.exceptions import (
     AuthenticationError,
+    MissingConfigError,
     SophosAPIException,
 )
 from pysophoscentralapi.sync.client import HTTPClientSync
@@ -53,6 +55,34 @@ def handle_errors(func: Callable) -> Callable:
             sys.exit(1)
 
     return wrapper
+
+
+def load_config() -> Config:
+    """Load configuration from context or default location.
+
+    This function checks the Click context for a custom config file path
+    (set by --config-file option) and loads it. If not specified, it falls
+    back to the default configuration loading behavior.
+
+    Returns:
+        Config: Loaded configuration
+
+    Raises:
+        MissingConfigError: If config file not found
+        InvalidConfigError: If config file is invalid
+    """
+    ctx = click.get_current_context()
+    config_file = ctx.obj.get("config_file") if ctx.obj else None
+
+    try:
+        if config_file:
+            # Use custom config file from --config-file option
+            return Config.from_file(Path(config_file))
+        # Use default config file discovery
+        return Config.from_file()
+    except MissingConfigError:
+        # Try environment variables as fallback
+        return Config.from_env()
 
 
 def _extract_items(data: Any) -> list:

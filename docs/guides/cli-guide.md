@@ -35,7 +35,17 @@ These options apply to all commands:
 |--------|-------------|
 | `--version` | Show version and exit |
 | `--debug` | Enable debug mode with full tracebacks |
+| `--config-file PATH` | Path to configuration file (overrides default locations) |
 | `--help` | Show help message |
+
+**Examples:**
+```bash
+# Use custom config file for any command
+pysophos --config-file /path/to/config.toml endpoint list
+
+# Combine with debug mode
+pysophos --debug --config-file ./test-config.toml alerts list
+```
 
 ## Configuration Commands
 

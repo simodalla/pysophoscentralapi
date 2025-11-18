@@ -1,5 +1,6 @@
 """Basic tests for CLI functionality."""
 
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 from click.testing import CliRunner
@@ -306,3 +307,58 @@ class TestConfigCommands:
 
             # Should complete successfully
             assert result.exit_code == 0 or "Configuration saved" in result.output
+
+    @patch("pysophoscentralapi.cli.utils.load_config")
+    @patch("pysophoscentralapi.cli.endpoint_cmds.create_endpoint_api_sync")
+    def test_global_config_file_option(self, mock_create_api, mock_load_config):
+        """Test global --config-file option."""
+        # Setup mocks
+        mock_config = Config(
+            auth=AuthConfig(client_id="test-id", client_secret="test-secret"),
+            api=APIConfig(region="us"),
+        )
+        mock_load_config.return_value = mock_config
+
+        mock_api_instance = MagicMock()
+        mock_endpoint = MagicMock()
+        mock_endpoint.model_dump.return_value = {
+            "id": "endpoint-1",
+            "hostname": "DESKTOP-001",
+            "health": "good",
+            "type": "computer",
+        }
+        mock_response = MagicMock()
+        mock_response.items = [mock_endpoint]
+        mock_api_instance.list_endpoints.return_value = mock_response
+        mock_create_api.return_value.__enter__.return_value = mock_api_instance
+
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            # Create a temporary config file
+            config_path = Path("test-config.toml")
+            config_path.write_text(
+                """
+[auth]
+client_id = "test-id"
+client_secret = "test-secret"
+
+[api]
+region = "us"
+"""
+            )
+
+            # Test with global --config-file option
+            result = runner.invoke(
+                cli, ["--config-file", str(config_path), "endpoint", "list", "--sync"]
+            )
+
+            # Verify the command succeeded
+            assert result.exit_code == 0
+
+    def test_global_config_file_help(self):
+        """Test that --config-file shows in help."""
+        runner = CliRunner()
+        result = runner.invoke(cli, ["--help"])
+
+        assert result.exit_code == 0
+        assert "--config-file" in result.output

@@ -12,10 +12,10 @@ from pysophoscentralapi.cli.utils import (
     add_sync_option,
     create_common_api_sync,
     handle_errors,
+    load_config,
 )
 from pysophoscentralapi.core.auth import OAuth2ClientCredentials
 from pysophoscentralapi.core.client import HTTPClient
-from pysophoscentralapi.core.config import Config
 
 
 @click.group()
@@ -65,10 +65,7 @@ def alerts_list(
     formatter = OutputFormatter(color_enabled=not no_color)
 
     # Load configuration
-    try:
-        config = Config.from_file()
-    except FileNotFoundError:
-        config = Config.from_env()
+    config = load_config()
 
     # Build filters
     filters = None
@@ -145,10 +142,7 @@ def alerts_get(
     formatter = OutputFormatter(color_enabled=not no_color)
 
     # Load configuration
-    try:
-        config = Config.from_file()
-    except FileNotFoundError:
-        config = Config.from_env()
+    config = load_config()
 
     # Fetch data
     if sync:
@@ -256,10 +250,7 @@ def tenants_list(
     formatter = OutputFormatter(color_enabled=not no_color)
 
     # Load configuration
-    try:
-        config = Config.from_file()
-    except FileNotFoundError:
-        config = Config.from_env()
+    config = load_config()
 
     # Fetch data
     if sync:
@@ -326,10 +317,7 @@ def tenants_get(
     formatter = OutputFormatter(color_enabled=not no_color)
 
     # Load configuration
-    try:
-        config = Config.from_file()
-    except FileNotFoundError:
-        config = Config.from_env()
+    config = load_config()
 
     # Fetch data
     if sync:
@@ -396,10 +384,7 @@ def admins_list(
     formatter = OutputFormatter(color_enabled=not no_color)
 
     # Load configuration
-    try:
-        config = Config.from_file()
-    except FileNotFoundError:
-        config = Config.from_env()
+    config = load_config()
 
     # Fetch data
     if sync:
@@ -469,10 +454,7 @@ def roles_list(
     formatter = OutputFormatter(color_enabled=not no_color)
 
     # Load configuration
-    try:
-        config = Config.from_file()
-    except FileNotFoundError:
-        config = Config.from_env()
+    config = load_config()
 
     # Fetch data
     if sync:

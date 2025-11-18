@@ -12,10 +12,10 @@ from pysophoscentralapi.cli.utils import (
     add_sync_option,
     create_endpoint_api_sync,
     handle_errors,
+    load_config,
 )
 from pysophoscentralapi.core.auth import OAuth2ClientCredentials
 from pysophoscentralapi.core.client import HTTPClient
-from pysophoscentralapi.core.config import Config
 
 
 @click.group()
@@ -71,10 +71,7 @@ def endpoint_list(
     formatter = OutputFormatter(color_enabled=not no_color)
 
     # Load configuration
-    try:
-        config = Config.from_file()
-    except FileNotFoundError:
-        config = Config.from_env()
+    config = load_config()
 
     # Build filters
     filters = None
@@ -162,10 +159,7 @@ def endpoint_get(
     formatter = OutputFormatter(color_enabled=not no_color)
 
     # Load configuration
-    try:
-        config = Config.from_file()
-    except FileNotFoundError:
-        config = Config.from_env()
+    config = load_config()
 
     # Fetch data
     if sync:
@@ -230,10 +224,7 @@ def scan(
     formatter = OutputFormatter()
 
     # Load configuration
-    try:
-        config = Config.from_file()
-    except FileNotFoundError:
-        config = Config.from_env()
+    config = load_config()
 
     # Trigger scan
     if sync:
@@ -291,10 +282,7 @@ def isolate(
     formatter = OutputFormatter()
 
     # Load configuration
-    try:
-        config = Config.from_file()
-    except FileNotFoundError:
-        config = Config.from_env()
+    config = load_config()
 
     # Isolate endpoint
     if sync:
@@ -353,10 +341,7 @@ def unisolate(
     formatter = OutputFormatter()
 
     # Load configuration
-    try:
-        config = Config.from_file()
-    except FileNotFoundError:
-        config = Config.from_env()
+    config = load_config()
 
     # Unisolate endpoint
     if sync:
@@ -419,10 +404,7 @@ def status(
     formatter = OutputFormatter(color_enabled=not no_color)
 
     # Load configuration
-    try:
-        config = Config.from_file()
-    except FileNotFoundError:
-        config = Config.from_env()
+    config = load_config()
 
     # Get tamper protection status
     if sync:
@@ -496,10 +478,7 @@ def update(
     formatter = OutputFormatter()
 
     # Load configuration
-    try:
-        config = Config.from_file()
-    except FileNotFoundError:
-        config = Config.from_env()
+    config = load_config()
 
     # Update tamper protection
     if sync:

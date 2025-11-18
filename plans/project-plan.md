@@ -362,10 +362,13 @@ All list/search commands should support:
 
 ### 5.1 Configuration Sources (Priority Order)
 
-1. Command-line arguments
-2. Environment variables
-3. Configuration file
-4. Default values
+1. Command-line `--config-file` option
+2. `SOPHOS_CONFIG_FILE` environment variable
+3. `./config.toml` (current directory)
+4. `~/.config/pysophos/config.toml` (default location)
+5. `~/.pysophos/config.toml` (alternative location)
+6. Other environment variables (`SOPHOS_CLIENT_ID`, `SOPHOS_CLIENT_SECRET`, etc.)
+7. Default values
 
 ### 5.2 Configuration File
 
@@ -396,11 +399,11 @@ csv_delimiter = ","
 
 ### 5.3 Environment Variables
 
-- `SOPHOS_CLIENT_ID`
-- `SOPHOS_CLIENT_SECRET`
-- `SOPHOS_TENANT_ID`
-- `SOPHOS_REGION`
-- `SOPHOS_CONFIG_FILE`
+- `SOPHOS_CONFIG_FILE` - Path to custom configuration file (takes precedence over default locations)
+- `SOPHOS_CLIENT_ID` - OAuth2 client ID
+- `SOPHOS_CLIENT_SECRET` - OAuth2 client secret
+- `SOPHOS_TENANT_ID` - Tenant ID (optional)
+- `SOPHOS_REGION` - Data region (us, eu, ap, etc.)
 
 ---
 

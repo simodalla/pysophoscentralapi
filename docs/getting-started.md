@@ -75,7 +75,30 @@ pysophos config init
 
 This will prompt you for credentials and create the config file.
 
-#### Option 2: Environment Variables
+#### Option 2: Custom Configuration File Location
+
+You can specify a custom configuration file path using:
+
+**Command-line option:**
+```bash
+pysophos --config-file /path/to/my-config.toml endpoint list
+```
+
+**Environment variable:**
+```bash
+export SOPHOS_CONFIG_FILE=/path/to/my-config.toml
+pysophos endpoint list
+```
+
+**Configuration Priority (highest to lowest):**
+1. Command-line `--config-file` option
+2. `SOPHOS_CONFIG_FILE` environment variable
+3. `./config.toml` (current directory)
+4. `~/.config/pysophos/config.toml` (default)
+5. `~/.pysophos/config.toml` (alternative)
+6. Environment variables (`SOPHOS_CLIENT_ID`, `SOPHOS_CLIENT_SECRET`, etc.)
+
+#### Option 3: Environment Variables
 
 ```bash
 export SOPHOS_CLIENT_ID="your-client-id"
@@ -85,7 +108,7 @@ export SOPHOS_REGION="us"
 
 Add these to your `~/.bashrc`, `~/.zshrc`, or equivalent for persistence.
 
-#### Option 3: Programmatic (Library Usage)
+#### Option 4: Programmatic (Library Usage)
 
 ```python
 from pysophoscentralapi.core.config import Config, APIConfig, AuthConfig

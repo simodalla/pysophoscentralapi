@@ -21,8 +21,14 @@ from pysophoscentralapi.cli.endpoint_cmds import endpoint
     default=False,
     help="Enable debug mode with full tracebacks",
 )
+@click.option(
+    "--config-file",
+    type=click.Path(exists=True, dir_okay=False, readable=True),
+    default=None,
+    help="Path to configuration file (overrides default ~/.config/pysophos/config.toml)",
+)
 @click.pass_context
-def cli(ctx: click.Context, debug: bool) -> None:
+def cli(ctx: click.Context, debug: bool, config_file: str | None) -> None:
     """PySophosCentralApi - Sophos Central API Client.
 
     A professional Python library and CLI for interacting with
@@ -34,9 +40,11 @@ def cli(ctx: click.Context, debug: bool) -> None:
         pysophos endpoint list --output json
         pysophos alerts list --severity high --severity critical
         pysophos tenants list
+        pysophos --config-file /path/to/config.toml endpoint list
     """
     ctx.ensure_object(dict)
     ctx.obj["debug"] = debug
+    ctx.obj["config_file"] = config_file
 
 
 # Register command groups

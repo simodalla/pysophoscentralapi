@@ -6,7 +6,7 @@ from pathlib import Path
 import click
 
 from pysophoscentralapi.cli.output import OutputFormatter
-from pysophoscentralapi.cli.utils import handle_errors
+from pysophoscentralapi.cli.utils import handle_errors, load_config
 from pysophoscentralapi.core.auth import OAuth2ClientCredentials
 from pysophoscentralapi.core.config import Config
 
@@ -145,25 +145,30 @@ def show(config_file: str | None) -> None:
     "--config-file",
     type=click.Path(exists=True),
     default=None,
-    help="Config file path",
+    help="Config file path (overrides global --config-file)",
 )
+@click.pass_context
 @handle_errors
-def test(config_file: str | None) -> None:
+def test(ctx: click.Context, config_file: str | None) -> None:
     """Test API connection with current configuration.
 
     \b
     Example:
         pysophos config test
+        pysophos config test --config-file /path/to/config.toml
     """
     formatter = OutputFormatter()
     formatter.print_info("Testing API connection...")
 
     # Load configuration
-    config = Config.from_file(config_file) if config_file else Config.from_file()
+    # Local --config-file takes precedence over global one
+    config_obj = (
+        Config.from_file(Path(config_file)) if config_file else load_config()
+    )
 
     # Test authentication
     formatter.print_info("Step 1: Testing authentication...")
-    auth = OAuth2ClientCredentials(config.auth)
+    auth = OAuth2ClientCredentials(config_obj.auth)
 
     try:
         token = asyncio.run(auth.get_token())

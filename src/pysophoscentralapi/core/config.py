@@ -248,11 +248,13 @@ class Config(BaseSettings):
     def _find_config_file() -> Path | None:
         """Find config file in standard locations.
 
-        Checks in order:
+        Checks in order (when no explicit path is provided):
         1. SOPHOS_CONFIG_FILE environment variable
         2. ./config.toml (current directory)
-        3. ~/.config/pysophos/config.toml
-        4. ~/.pysophos/config.toml
+        3. ~/.config/pysophos/config.toml (default XDG location)
+        4. ~/.pysophos/config.toml (alternative location)
+
+        Note: The CLI's --config-file option takes precedence over this discovery.
 
         Returns:
             Path to config file if found, None otherwise
