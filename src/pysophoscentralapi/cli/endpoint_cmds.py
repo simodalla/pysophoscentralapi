@@ -10,10 +10,12 @@ from pysophoscentralapi.cli.output import OutputFormatter
 from pysophoscentralapi.cli.utils import (
     add_output_options,
     add_sync_option,
+    create_endpoint_api_sync,
     handle_errors,
 )
+from pysophoscentralapi.core.auth import OAuth2ClientCredentials
+from pysophoscentralapi.core.client import HTTPClient
 from pysophoscentralapi.core.config import Config
-from pysophoscentralapi.sync.endpoint import EndpointAPISync
 
 
 @click.group()
@@ -85,17 +87,30 @@ def endpoint_list(
 
     # Fetch data
     if sync:
-        with EndpointAPISync(config) as api:
+        with create_endpoint_api_sync(config) as api:
             if all_pages:
                 endpoints = []
                 for endpoint in api.paginate(page_size=page_size, filters=filters):
                     endpoints.append(endpoint)
             else:
-                endpoints = api.list(page_size=page_size, filters=filters)
+                response = api.list_endpoints(filters=filters)
+                endpoints = response.items
     else:
 
         async def fetch_data():
-            async with EndpointAPI(config) as api:
+            # Create auth and get base URL
+            auth = OAuth2ClientCredentials(config.auth)
+            whoami_response = await auth.whoami()
+            base_url = whoami_response.api_hosts.dataRegion
+
+            # Create HTTP client and API
+            async with HTTPClient(
+                base_url=base_url,
+                auth_provider=auth,
+                timeout=config.api.timeout,
+                max_retries=config.api.max_retries,
+            ) as http_client:
+                api = EndpointAPI(http_client)
                 if all_pages:
                     endpoints = []
                     async for endpoint in api.paginate(
@@ -103,7 +118,8 @@ def endpoint_list(
                     ):
                         endpoints.append(endpoint)
                     return endpoints
-                return await api.list(page_size=page_size, filters=filters)
+                response = await api.list_endpoints(filters=filters)
+                return response.items
 
         endpoints = asyncio.run(fetch_data())
 
@@ -151,13 +167,25 @@ def endpoint_get(
 
     # Fetch data
     if sync:
-        with EndpointAPISync(config) as api:
-            endpoint = api.get(endpoint_id)
+        with create_endpoint_api_sync(config) as api:
+            endpoint = api.get_endpoint(endpoint_id)
     else:
 
         async def fetch_data():
-            async with EndpointAPI(config) as api:
-                return await api.get(endpoint_id)
+            # Create auth and get base URL
+            auth = OAuth2ClientCredentials(config.auth)
+            whoami_response = await auth.whoami()
+            base_url = whoami_response.api_hosts.dataRegion
+
+            # Create HTTP client and API
+            async with HTTPClient(
+                base_url=base_url,
+                auth_provider=auth,
+                timeout=config.api.timeout,
+                max_retries=config.api.max_retries,
+            ) as http_client:
+                api = EndpointAPI(http_client)
+                return await api.get_endpoint(endpoint_id)
 
         endpoint = asyncio.run(fetch_data())
 
@@ -205,13 +233,25 @@ def scan(
 
     # Trigger scan
     if sync:
-        with EndpointAPISync(config) as api:
-            api.scan(endpoint_id, comment=comment)
+        with create_endpoint_api_sync(config) as api:
+            api.scan_endpoint(endpoint_id, comment=comment)
     else:
 
         async def trigger_scan():
-            async with EndpointAPI(config) as api:
-                await api.scan(endpoint_id, comment=comment)
+            # Create auth and get base URL
+            auth = OAuth2ClientCredentials(config.auth)
+            whoami_response = await auth.whoami()
+            base_url = whoami_response.api_hosts.dataRegion
+
+            # Create HTTP client and API
+            async with HTTPClient(
+                base_url=base_url,
+                auth_provider=auth,
+                timeout=config.api.timeout,
+                max_retries=config.api.max_retries,
+            ) as http_client:
+                api = EndpointAPI(http_client)
+                await api.scan_endpoint(endpoint_id, comment=comment)
 
         asyncio.run(trigger_scan())
 
@@ -252,15 +292,27 @@ def isolate(
 
     # Isolate endpoint
     if sync:
-        with EndpointAPISync(config) as api:
-            api.isolate(endpoint_id, comment=comment)
+        with create_endpoint_api_sync(config) as api:
+            api.isolate_endpoint(endpoint_id, comment=comment)
     else:
 
-        async def isolate_endpoint():
-            async with EndpointAPI(config) as api:
-                await api.isolate(endpoint_id, comment=comment)
+        async def isolate_endpoint_async():
+            # Create auth and get base URL
+            auth = OAuth2ClientCredentials(config.auth)
+            whoami_response = await auth.whoami()
+            base_url = whoami_response.api_hosts.dataRegion
 
-        asyncio.run(isolate_endpoint())
+            # Create HTTP client and API
+            async with HTTPClient(
+                base_url=base_url,
+                auth_provider=auth,
+                timeout=config.api.timeout,
+                max_retries=config.api.max_retries,
+            ) as http_client:
+                api = EndpointAPI(http_client)
+                await api.isolate_endpoint(endpoint_id, comment=comment)
+
+        asyncio.run(isolate_endpoint_async())
 
     formatter.print_info(f"Isolating endpoint: {endpoint_id}")
     formatter.print_info(f"Comment: {comment}")
@@ -300,15 +352,27 @@ def unisolate(
 
     # Unisolate endpoint
     if sync:
-        with EndpointAPISync(config) as api:
-            api.unisolate(endpoint_id, comment=comment)
+        with create_endpoint_api_sync(config) as api:
+            api.unisolate_endpoint(endpoint_id, comment=comment)
     else:
 
-        async def unisolate_endpoint():
-            async with EndpointAPI(config) as api:
-                await api.unisolate(endpoint_id, comment=comment)
+        async def unisolate_endpoint_async():
+            # Create auth and get base URL
+            auth = OAuth2ClientCredentials(config.auth)
+            whoami_response = await auth.whoami()
+            base_url = whoami_response.api_hosts.dataRegion
 
-        asyncio.run(unisolate_endpoint())
+            # Create HTTP client and API
+            async with HTTPClient(
+                base_url=base_url,
+                auth_provider=auth,
+                timeout=config.api.timeout,
+                max_retries=config.api.max_retries,
+            ) as http_client:
+                api = EndpointAPI(http_client)
+                await api.unisolate_endpoint(endpoint_id, comment=comment)
+
+        asyncio.run(unisolate_endpoint_async())
 
     formatter.print_info(f"Removing isolation from endpoint: {endpoint_id}")
 
@@ -352,12 +416,24 @@ def status(
 
     # Get tamper protection status
     if sync:
-        with EndpointAPISync(config) as api:
+        with create_endpoint_api_sync(config) as api:
             tamper_status = api.get_tamper_protection(endpoint_id)
     else:
 
         async def get_status():
-            async with EndpointAPI(config) as api:
+            # Create auth and get base URL
+            auth = OAuth2ClientCredentials(config.auth)
+            whoami_response = await auth.whoami()
+            base_url = whoami_response.api_hosts.dataRegion
+
+            # Create HTTP client and API
+            async with HTTPClient(
+                base_url=base_url,
+                auth_provider=auth,
+                timeout=config.api.timeout,
+                max_retries=config.api.max_retries,
+            ) as http_client:
+                api = EndpointAPI(http_client)
                 return await api.get_tamper_protection(endpoint_id)
 
         tamper_status = asyncio.run(get_status())
@@ -415,14 +491,26 @@ def update(
 
     # Update tamper protection
     if sync:
-        with EndpointAPISync(config) as api:
+        with create_endpoint_api_sync(config) as api:
             api.update_tamper_protection(
                 endpoint_id, enabled=enable, regenerate_password=regenerate_password
             )
     else:
 
         async def update_tamper():
-            async with EndpointAPI(config) as api:
+            # Create auth and get base URL
+            auth = OAuth2ClientCredentials(config.auth)
+            whoami_response = await auth.whoami()
+            base_url = whoami_response.api_hosts.dataRegion
+
+            # Create HTTP client and API
+            async with HTTPClient(
+                base_url=base_url,
+                auth_provider=auth,
+                timeout=config.api.timeout,
+                max_retries=config.api.max_retries,
+            ) as http_client:
+                api = EndpointAPI(http_client)
                 await api.update_tamper_protection(
                     endpoint_id, enabled=enable, regenerate_password=regenerate_password
                 )

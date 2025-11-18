@@ -1,17 +1,24 @@
 """CLI utilities and helper functions."""
 
+import asyncio
 import sys
 from collections.abc import Callable
+from contextlib import contextmanager
 from functools import wraps
 from typing import Any
 
 import click
 
 from pysophoscentralapi.cli.output import OutputFormatter
+from pysophoscentralapi.core.auth import OAuth2ClientCredentials
+from pysophoscentralapi.core.config import Config
 from pysophoscentralapi.core.exceptions import (
     AuthenticationError,
     SophosAPIException,
 )
+from pysophoscentralapi.sync.client import HTTPClientSync
+from pysophoscentralapi.sync.common import CommonAPISync
+from pysophoscentralapi.sync.endpoint import EndpointAPISync
 
 
 def handle_errors(func: Callable) -> Callable:
@@ -148,3 +155,57 @@ def add_sync_option(func: Callable) -> Callable:
         default=False,
         help="Use synchronous mode",
     )(func)
+
+
+@contextmanager
+def create_endpoint_api_sync(config: Config):
+    """Create a sync Endpoint API client from config.
+
+    Args:
+        config: Configuration object
+
+    Yields:
+        EndpointAPISync: Configured sync endpoint API client
+    """
+    # Create auth provider
+    auth = OAuth2ClientCredentials(config.auth)
+
+    # Get whoami to determine base URL
+    whoami_response = asyncio.run(auth.whoami())
+    base_url = whoami_response.api_hosts.dataRegion
+
+    # Create HTTP client and API
+    with HTTPClientSync(
+        base_url=base_url,
+        auth_provider=auth,
+        timeout=config.api.timeout,
+        max_retries=config.api.max_retries,
+    ) as http_client:
+        yield EndpointAPISync(http_client)
+
+
+@contextmanager
+def create_common_api_sync(config: Config):
+    """Create a sync Common API client from config.
+
+    Args:
+        config: Configuration object
+
+    Yields:
+        CommonAPISync: Configured sync common API client
+    """
+    # Create auth provider
+    auth = OAuth2ClientCredentials(config.auth)
+
+    # Get whoami to determine base URL
+    whoami_response = asyncio.run(auth.whoami())
+    base_url = whoami_response.api_hosts.dataRegion
+
+    # Create HTTP client and API
+    with HTTPClientSync(
+        base_url=base_url,
+        auth_provider=auth,
+        timeout=config.api.timeout,
+        max_retries=config.api.max_retries,
+    ) as http_client:
+        yield CommonAPISync(http_client)

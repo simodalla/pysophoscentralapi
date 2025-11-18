@@ -1,6 +1,5 @@
 """Tests for exception handling."""
 
-
 from pysophoscentralapi.core import exceptions
 
 

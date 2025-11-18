@@ -105,7 +105,9 @@ class TestEndpointAPI:
         # Check that filters were passed
         call_args = mock_http_client.get.call_args
         # Parameters are passed as second positional argument
-        params = call_args[0][1] if len(call_args[0]) > 1 else call_args.kwargs.get("params")
+        params = (
+            call_args[0][1] if len(call_args[0]) > 1 else call_args.kwargs.get("params")
+        )
         assert params["healthStatus"] == "good"
         assert params["pageSize"] == "100"
         assert params["hostnameContains"] == "DESKTOP"

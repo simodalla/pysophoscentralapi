@@ -10,10 +10,12 @@ from pysophoscentralapi.cli.output import OutputFormatter
 from pysophoscentralapi.cli.utils import (
     add_output_options,
     add_sync_option,
+    create_common_api_sync,
     handle_errors,
 )
+from pysophoscentralapi.core.auth import OAuth2ClientCredentials
+from pysophoscentralapi.core.client import HTTPClient
 from pysophoscentralapi.core.config import Config
-from pysophoscentralapi.sync.common import CommonAPISync
 
 
 @click.group()
@@ -76,18 +78,32 @@ def alerts_list(
 
     # Fetch data
     if sync:
-        with CommonAPISync(config) as api:
-            alerts = api.alerts.list(page_size=page_size, filters=filters)
+        with create_common_api_sync(config) as api:
+            response = api.alerts.list_alerts(filters=filters)
+            alerts_items = response.items
     else:
 
         async def fetch_data():
-            async with CommonAPI(config) as api:
-                return await api.alerts.list(page_size=page_size, filters=filters)
+            # Create auth and get base URL
+            auth = OAuth2ClientCredentials(config.auth)
+            whoami_response = await auth.whoami()
+            base_url = whoami_response.api_hosts.dataRegion
 
-        alerts = asyncio.run(fetch_data())
+            # Create HTTP client and API
+            async with HTTPClient(
+                base_url=base_url,
+                auth_provider=auth,
+                timeout=config.api.timeout,
+                max_retries=config.api.max_retries,
+            ) as http_client:
+                api = CommonAPI(http_client)
+                response = await api.alerts.list_alerts(filters=filters)
+                return response.items
+
+        alerts_items = asyncio.run(fetch_data())
 
     # Convert to dict format
-    items = [alert.model_dump() for alert in alerts]
+    items = [alert.model_dump() for alert in alerts_items]
     data = {"items": items}
 
     # Output
@@ -134,13 +150,25 @@ def alerts_get(
 
     # Fetch data
     if sync:
-        with CommonAPISync(config) as api:
-            alert = api.alerts.get(alert_id)
+        with create_common_api_sync(config) as api:
+            alert = api.alerts.get_alert(alert_id)
     else:
 
         async def fetch_data():
-            async with CommonAPI(config) as api:
-                return await api.alerts.get(alert_id)
+            # Create auth and get base URL
+            auth = OAuth2ClientCredentials(config.auth)
+            whoami_response = await auth.whoami()
+            base_url = whoami_response.api_hosts.dataRegion
+
+            # Create HTTP client and API
+            async with HTTPClient(
+                base_url=base_url,
+                auth_provider=auth,
+                timeout=config.api.timeout,
+                max_retries=config.api.max_retries,
+            ) as http_client:
+                api = CommonAPI(http_client)
+                return await api.alerts.get_alert(alert_id)
 
         alert = asyncio.run(fetch_data())
 
@@ -231,18 +259,32 @@ def tenants_list(
 
     # Fetch data
     if sync:
-        with CommonAPISync(config) as api:
-            tenants = api.tenants.list()
+        with create_common_api_sync(config) as api:
+            response = api.tenants.list_tenants()
+            tenants_items = response.items
     else:
 
         async def fetch_data():
-            async with CommonAPI(config) as api:
-                return await api.tenants.list()
+            # Create auth and get base URL
+            auth = OAuth2ClientCredentials(config.auth)
+            whoami_response = await auth.whoami()
+            base_url = whoami_response.api_hosts.dataRegion
 
-        tenants = asyncio.run(fetch_data())
+            # Create HTTP client and API
+            async with HTTPClient(
+                base_url=base_url,
+                auth_provider=auth,
+                timeout=config.api.timeout,
+                max_retries=config.api.max_retries,
+            ) as http_client:
+                api = CommonAPI(http_client)
+                response = await api.tenants.list_tenants()
+                return response.items
+
+        tenants_items = asyncio.run(fetch_data())
 
     # Convert to dict format
-    items = [tenant.model_dump() for tenant in tenants]
+    items = [tenant.model_dump() for tenant in tenants_items]
     data = {"items": items}
 
     # Output
@@ -285,13 +327,25 @@ def tenants_get(
 
     # Fetch data
     if sync:
-        with CommonAPISync(config) as api:
-            tenant = api.tenants.get(tenant_id)
+        with create_common_api_sync(config) as api:
+            tenant = api.tenants.get_tenant(tenant_id)
     else:
 
         async def fetch_data():
-            async with CommonAPI(config) as api:
-                return await api.tenants.get(tenant_id)
+            # Create auth and get base URL
+            auth = OAuth2ClientCredentials(config.auth)
+            whoami_response = await auth.whoami()
+            base_url = whoami_response.api_hosts.dataRegion
+
+            # Create HTTP client and API
+            async with HTTPClient(
+                base_url=base_url,
+                auth_provider=auth,
+                timeout=config.api.timeout,
+                max_retries=config.api.max_retries,
+            ) as http_client:
+                api = CommonAPI(http_client)
+                return await api.tenants.get_tenant(tenant_id)
 
         tenant = asyncio.run(fetch_data())
 
@@ -341,18 +395,32 @@ def admins_list(
 
     # Fetch data
     if sync:
-        with CommonAPISync(config) as api:
-            admins = api.admins.list()
+        with create_common_api_sync(config) as api:
+            response = api.admins.list_admins()
+            admins_items = response.items
     else:
 
         async def fetch_data():
-            async with CommonAPI(config) as api:
-                return await api.admins.list()
+            # Create auth and get base URL
+            auth = OAuth2ClientCredentials(config.auth)
+            whoami_response = await auth.whoami()
+            base_url = whoami_response.api_hosts.dataRegion
 
-        admins = asyncio.run(fetch_data())
+            # Create HTTP client and API
+            async with HTTPClient(
+                base_url=base_url,
+                auth_provider=auth,
+                timeout=config.api.timeout,
+                max_retries=config.api.max_retries,
+            ) as http_client:
+                api = CommonAPI(http_client)
+                response = await api.admins.list_admins()
+                return response.items
+
+        admins_items = asyncio.run(fetch_data())
 
     # Convert to dict format
-    items = [admin.model_dump() for admin in admins]
+    items = [admin.model_dump() for admin in admins_items]
     data = {"items": items}
 
     # Output
@@ -398,18 +466,32 @@ def roles_list(
 
     # Fetch data
     if sync:
-        with CommonAPISync(config) as api:
-            roles = api.roles.list()
+        with create_common_api_sync(config) as api:
+            response = api.roles.list_roles()
+            roles_items = response.items
     else:
 
         async def fetch_data():
-            async with CommonAPI(config) as api:
-                return await api.roles.list()
+            # Create auth and get base URL
+            auth = OAuth2ClientCredentials(config.auth)
+            whoami_response = await auth.whoami()
+            base_url = whoami_response.api_hosts.dataRegion
 
-        roles = asyncio.run(fetch_data())
+            # Create HTTP client and API
+            async with HTTPClient(
+                base_url=base_url,
+                auth_provider=auth,
+                timeout=config.api.timeout,
+                max_retries=config.api.max_retries,
+            ) as http_client:
+                api = CommonAPI(http_client)
+                response = await api.roles.list_roles()
+                return response.items
+
+        roles_items = asyncio.run(fetch_data())
 
     # Convert to dict format
-    items = [role.model_dump() for role in roles]
+    items = [role.model_dump() for role in roles_items]
     data = {"items": items}
 
     # Output
@@ -418,6 +500,6 @@ def roles_list(
     elif output == "csv":
         formatter.format_csv(items, output_file)
     else:
-        formatter.format_table(items)
+        formatter.format_table([data])
 
     formatter.print_success(f"Found {len(items)} role(s)")

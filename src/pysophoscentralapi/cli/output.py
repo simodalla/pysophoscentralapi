@@ -5,7 +5,6 @@ This module provides output formatters for different formats (table, JSON, CSV).
 
 import csv
 import json
-import sys
 from io import StringIO
 from pathlib import Path
 from typing import Any

@@ -1,6 +1,5 @@
 """Tests for data models."""
 
-
 from pysophoscentralapi.core.models import (
     PageInfo,
     PaginatedResponse,

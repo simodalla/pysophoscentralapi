@@ -102,8 +102,8 @@ class TestCLICommands:
         )
 
     @patch("pysophoscentralapi.cli.endpoint_cmds.Config.from_file")
-    @patch("pysophoscentralapi.cli.endpoint_cmds.EndpointAPISync")
-    def test_endpoint_list_demo(self, mock_endpoint_api, mock_config):
+    @patch("pysophoscentralapi.cli.endpoint_cmds.create_endpoint_api_sync")
+    def test_endpoint_list_demo(self, mock_create_api, mock_config):
         """Test endpoint list command with mocked API."""
         # Setup mocks
         mock_config.return_value = self._create_mock_config()
@@ -116,8 +116,10 @@ class TestCLICommands:
             "health": "good",
             "type": "computer",
         }
-        mock_api_instance.list.return_value = [mock_endpoint]
-        mock_endpoint_api.return_value.__enter__.return_value = mock_api_instance
+        mock_response = MagicMock()
+        mock_response.items = [mock_endpoint]
+        mock_api_instance.list_endpoints.return_value = mock_response
+        mock_create_api.return_value.__enter__.return_value = mock_api_instance
 
         runner = CliRunner()
         result = runner.invoke(cli, ["endpoint", "list", "--sync"])
@@ -126,8 +128,8 @@ class TestCLICommands:
         assert "DESKTOP-001" in result.output or "Found 1 endpoint" in result.output
 
     @patch("pysophoscentralapi.cli.endpoint_cmds.Config.from_file")
-    @patch("pysophoscentralapi.cli.endpoint_cmds.EndpointAPISync")
-    def test_endpoint_list_json(self, mock_endpoint_api, mock_config):
+    @patch("pysophoscentralapi.cli.endpoint_cmds.create_endpoint_api_sync")
+    def test_endpoint_list_json(self, mock_create_api, mock_config):
         """Test endpoint list with JSON output."""
         mock_config.return_value = self._create_mock_config()
 
@@ -139,8 +141,10 @@ class TestCLICommands:
             "health": "good",
             "type": "computer",
         }
-        mock_api_instance.list.return_value = [mock_endpoint]
-        mock_endpoint_api.return_value.__enter__.return_value = mock_api_instance
+        mock_response = MagicMock()
+        mock_response.items = [mock_endpoint]
+        mock_api_instance.list_endpoints.return_value = mock_response
+        mock_create_api.return_value.__enter__.return_value = mock_api_instance
 
         runner = CliRunner()
         result = runner.invoke(cli, ["endpoint", "list", "--output", "json", "--sync"])
@@ -149,8 +153,8 @@ class TestCLICommands:
         assert "endpoint-1" in result.output or "DESKTOP-001" in result.output
 
     @patch("pysophoscentralapi.cli.common_cmds.Config.from_file")
-    @patch("pysophoscentralapi.cli.common_cmds.CommonAPISync")
-    def test_alerts_list_demo(self, mock_common_api, mock_config):
+    @patch("pysophoscentralapi.cli.common_cmds.create_common_api_sync")
+    def test_alerts_list_demo(self, mock_create_api, mock_config):
         """Test alerts list command with mocked API."""
         mock_config.return_value = self._create_mock_config()
 
@@ -163,8 +167,10 @@ class TestCLICommands:
             "category": "malware",
             "product": "endpoint",
         }
-        mock_api_instance.alerts.list.return_value = [mock_alert]
-        mock_common_api.return_value.__enter__.return_value = mock_api_instance
+        mock_response = MagicMock()
+        mock_response.items = [mock_alert]
+        mock_api_instance.alerts.list_alerts.return_value = mock_response
+        mock_create_api.return_value.__enter__.return_value = mock_api_instance
 
         runner = CliRunner()
         result = runner.invoke(cli, ["alerts", "list", "--sync"])
@@ -173,8 +179,8 @@ class TestCLICommands:
         assert "Found 1 alert" in result.output or "alert-1" in result.output
 
     @patch("pysophoscentralapi.cli.common_cmds.Config.from_file")
-    @patch("pysophoscentralapi.cli.common_cmds.CommonAPISync")
-    def test_alerts_list_with_severity(self, mock_common_api, mock_config):
+    @patch("pysophoscentralapi.cli.common_cmds.create_common_api_sync")
+    def test_alerts_list_with_severity(self, mock_create_api, mock_config):
         """Test alerts list with severity filter."""
         mock_config.return_value = self._create_mock_config()
 
@@ -187,8 +193,10 @@ class TestCLICommands:
             "category": "malware",
             "product": "endpoint",
         }
-        mock_api_instance.alerts.list.return_value = [mock_alert]
-        mock_common_api.return_value.__enter__.return_value = mock_api_instance
+        mock_response = MagicMock()
+        mock_response.items = [mock_alert]
+        mock_api_instance.alerts.list_alerts.return_value = mock_response
+        mock_create_api.return_value.__enter__.return_value = mock_api_instance
 
         runner = CliRunner()
         result = runner.invoke(
@@ -210,8 +218,8 @@ class TestCLICommands:
         )
 
     @patch("pysophoscentralapi.cli.common_cmds.Config.from_file")
-    @patch("pysophoscentralapi.cli.common_cmds.CommonAPISync")
-    def test_tenants_list_demo(self, mock_common_api, mock_config):
+    @patch("pysophoscentralapi.cli.common_cmds.create_common_api_sync")
+    def test_tenants_list_demo(self, mock_create_api, mock_config):
         """Test tenants list command with mocked API."""
         mock_config.return_value = self._create_mock_config()
 
@@ -222,8 +230,10 @@ class TestCLICommands:
             "name": "Test Company",
             "dataRegion": "us",
         }
-        mock_api_instance.tenants.list.return_value = [mock_tenant]
-        mock_common_api.return_value.__enter__.return_value = mock_api_instance
+        mock_response = MagicMock()
+        mock_response.items = [mock_tenant]
+        mock_api_instance.tenants.list_tenants.return_value = mock_response
+        mock_create_api.return_value.__enter__.return_value = mock_api_instance
 
         runner = CliRunner()
         result = runner.invoke(cli, ["tenants", "list", "--sync"])
@@ -232,14 +242,14 @@ class TestCLICommands:
         assert "Found 1 tenant" in result.output or "Test Company" in result.output
 
     @patch("pysophoscentralapi.cli.endpoint_cmds.Config.from_file")
-    @patch("pysophoscentralapi.cli.endpoint_cmds.EndpointAPISync")
-    def test_endpoint_scan_demo(self, mock_endpoint_api, mock_config):
+    @patch("pysophoscentralapi.cli.endpoint_cmds.create_endpoint_api_sync")
+    def test_endpoint_scan_demo(self, mock_create_api, mock_config):
         """Test endpoint scan command with mocked API."""
         mock_config.return_value = self._create_mock_config()
 
         mock_api_instance = MagicMock()
-        mock_api_instance.scan.return_value = None
-        mock_endpoint_api.return_value.__enter__.return_value = mock_api_instance
+        mock_api_instance.scan_endpoint.return_value = None
+        mock_create_api.return_value.__enter__.return_value = mock_api_instance
 
         runner = CliRunner()
         result = runner.invoke(cli, ["endpoint", "scan", "test-endpoint-123", "--sync"])
@@ -248,8 +258,8 @@ class TestCLICommands:
         assert "Scan triggered" in result.output or "test-endpoint-123" in result.output
 
     @patch("pysophoscentralapi.cli.endpoint_cmds.Config.from_file")
-    @patch("pysophoscentralapi.cli.endpoint_cmds.EndpointAPISync")
-    def test_endpoint_tamper_status(self, mock_endpoint_api, mock_config):
+    @patch("pysophoscentralapi.cli.endpoint_cmds.create_endpoint_api_sync")
+    def test_endpoint_tamper_status(self, mock_create_api, mock_config):
         """Test endpoint tamper status command with mocked API."""
         mock_config.return_value = self._create_mock_config()
 
@@ -260,7 +270,7 @@ class TestCLICommands:
             "globally_enabled": True,
         }
         mock_api_instance.get_tamper_protection.return_value = mock_tamper
-        mock_endpoint_api.return_value.__enter__.return_value = mock_api_instance
+        mock_create_api.return_value.__enter__.return_value = mock_api_instance
 
         runner = CliRunner()
         result = runner.invoke(
