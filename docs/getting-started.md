@@ -107,7 +107,7 @@ config = Config(
 pysophos endpoint list
 ```
 
-This will display all endpoints in a formatted table.
+This will connect to Sophos Central APIs and display all endpoints in a formatted table with real data from your environment.
 
 ### Filter by Health Status
 

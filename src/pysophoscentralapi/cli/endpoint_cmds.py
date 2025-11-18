@@ -1,9 +1,19 @@
 """Endpoint API CLI commands."""
 
+import asyncio
+
 import click
 
+from pysophoscentralapi.api.endpoint import EndpointAPI
+from pysophoscentralapi.api.endpoint.models import EndpointFilters, HealthStatus
 from pysophoscentralapi.cli.output import OutputFormatter
-from pysophoscentralapi.cli.utils import add_output_options, add_sync_option
+from pysophoscentralapi.cli.utils import (
+    add_output_options,
+    add_sync_option,
+    handle_errors,
+)
+from pysophoscentralapi.core.config import Config
+from pysophoscentralapi.sync.endpoint import EndpointAPISync
 
 
 @click.group()
@@ -36,6 +46,7 @@ def endpoint() -> None:
     default=False,
     help="Fetch all pages",
 )
+@handle_errors
 def endpoint_list(
     output: str,
     output_file: str | None,
@@ -57,43 +68,65 @@ def endpoint_list(
     """
     formatter = OutputFormatter(color_enabled=not no_color)
 
-    # TODO: Implement actual API call
-    formatter.print_warning("Not fully implemented yet - demo mode")
+    # Load configuration
+    try:
+        config = Config.from_file()
+    except FileNotFoundError:
+        config = Config.from_env()
 
-    # Demo data
-    demo_data = {
-        "items": [
-            {
-                "id": "endpoint-1",
-                "hostname": "DESKTOP-001",
-                "health": "good",
-                "type": "computer",
-                "os": "Windows 10",
-            },
-            {
-                "id": "endpoint-2",
-                "hostname": "SERVER-001",
-                "health": "bad",
-                "type": "server",
-                "os": "Windows Server 2019",
-            },
-        ]
-    }
+    # Build filters
+    filters = None
+    if health_status or endpoint_type:
+        filters = EndpointFilters()
+        if health_status:
+            filters.health_status = [HealthStatus(health_status)]
+        if endpoint_type:
+            filters.type = endpoint_type
 
-    if output == "json":
-        formatter.format_json(demo_data)
-    elif output == "csv":
-        formatter.format_csv(demo_data["items"], output_file)
+    # Fetch data
+    if sync:
+        with EndpointAPISync(config) as api:
+            if all_pages:
+                endpoints = []
+                for endpoint in api.paginate(page_size=page_size, filters=filters):
+                    endpoints.append(endpoint)
+            else:
+                endpoints = api.list(page_size=page_size, filters=filters)
     else:
-        formatter.format_table(demo_data["items"])
 
-    formatter.print_info(f"Mode: {'sync' if sync else 'async'}")
+        async def fetch_data():
+            async with EndpointAPI(config) as api:
+                if all_pages:
+                    endpoints = []
+                    async for endpoint in api.paginate(
+                        page_size=page_size, filters=filters
+                    ):
+                        endpoints.append(endpoint)
+                    return endpoints
+                return await api.list(page_size=page_size, filters=filters)
+
+        endpoints = asyncio.run(fetch_data())
+
+    # Convert to dict format for output
+    items = [endpoint.model_dump() for endpoint in endpoints]
+    data = {"items": items}
+
+    # Output
+    if output == "json":
+        formatter.format_json(data, output_file)
+    elif output == "csv":
+        formatter.format_csv(items, output_file)
+    else:
+        formatter.format_table(items)
+
+    formatter.print_success(f"Found {len(items)} endpoint(s)")
 
 
 @endpoint.command("get")
 @add_output_options
 @add_sync_option
 @click.argument("endpoint_id")
+@handle_errors
 def endpoint_get(
     endpoint_id: str,
     output: str,
@@ -110,22 +143,36 @@ def endpoint_get(
     """
     formatter = OutputFormatter(color_enabled=not no_color)
 
-    formatter.print_warning("Not fully implemented yet - demo mode")
+    # Load configuration
+    try:
+        config = Config.from_file()
+    except FileNotFoundError:
+        config = Config.from_env()
 
-    # Demo data
-    demo_data = {
-        "id": endpoint_id,
-        "hostname": "DESKTOP-001",
-        "health": "good",
-        "type": "computer",
-        "os": "Windows 10 Pro",
-        "ip_address": "192.168.1.100",
-    }
-
-    if output == "json":
-        formatter.format_json(demo_data)
+    # Fetch data
+    if sync:
+        with EndpointAPISync(config) as api:
+            endpoint = api.get(endpoint_id)
     else:
-        formatter.format_table([demo_data])
+
+        async def fetch_data():
+            async with EndpointAPI(config) as api:
+                return await api.get(endpoint_id)
+
+        endpoint = asyncio.run(fetch_data())
+
+    # Convert to dict
+    data = endpoint.model_dump()
+
+    # Output
+    if output == "json":
+        formatter.format_json(data, output_file)
+    elif output == "csv":
+        formatter.format_csv([data], output_file)
+    else:
+        formatter.format_table([data])
+
+    formatter.print_success(f"Retrieved endpoint: {endpoint.hostname}")
 
 
 @endpoint.command()
@@ -135,6 +182,7 @@ def endpoint_get(
     "--comment",
     help="Comment explaining the scan",
 )
+@handle_errors
 def scan(
     endpoint_id: str,
     sync: bool,
@@ -149,15 +197,27 @@ def scan(
     """
     formatter = OutputFormatter()
 
-    formatter.print_warning("Not fully implemented yet - demo mode")
-    formatter.print_info(f"Scanning endpoint: {endpoint_id}")
+    # Load configuration
+    try:
+        config = Config.from_file()
+    except FileNotFoundError:
+        config = Config.from_env()
 
+    # Trigger scan
+    if sync:
+        with EndpointAPISync(config) as api:
+            api.scan(endpoint_id, comment=comment)
+    else:
+
+        async def trigger_scan():
+            async with EndpointAPI(config) as api:
+                await api.scan(endpoint_id, comment=comment)
+
+        asyncio.run(trigger_scan())
+
+    formatter.print_success(f"Scan triggered for endpoint: {endpoint_id}")
     if comment:
         formatter.print_info(f"Comment: {comment}")
-
-    formatter.print_success(
-        f"Scan triggered successfully (Mode: {'sync' if sync else 'async'})"
-    )
 
 
 @endpoint.command()
@@ -169,6 +229,7 @@ def scan(
     prompt=True,
     help="Comment explaining the isolation (required)",
 )
+@handle_errors
 def isolate(
     endpoint_id: str,
     sync: bool,
@@ -183,7 +244,24 @@ def isolate(
     """
     formatter = OutputFormatter()
 
-    formatter.print_warning("Not fully implemented yet - demo mode")
+    # Load configuration
+    try:
+        config = Config.from_file()
+    except FileNotFoundError:
+        config = Config.from_env()
+
+    # Isolate endpoint
+    if sync:
+        with EndpointAPISync(config) as api:
+            api.isolate(endpoint_id, comment=comment)
+    else:
+
+        async def isolate_endpoint():
+            async with EndpointAPI(config) as api:
+                await api.isolate(endpoint_id, comment=comment)
+
+        asyncio.run(isolate_endpoint())
+
     formatter.print_info(f"Isolating endpoint: {endpoint_id}")
     formatter.print_info(f"Comment: {comment}")
 
@@ -199,6 +277,7 @@ def isolate(
     "--comment",
     help="Comment explaining the unisolation",
 )
+@handle_errors
 def unisolate(
     endpoint_id: str,
     sync: bool,
@@ -213,15 +292,30 @@ def unisolate(
     """
     formatter = OutputFormatter()
 
-    formatter.print_warning("Not fully implemented yet - demo mode")
+    # Load configuration
+    try:
+        config = Config.from_file()
+    except FileNotFoundError:
+        config = Config.from_env()
+
+    # Unisolate endpoint
+    if sync:
+        with EndpointAPISync(config) as api:
+            api.unisolate(endpoint_id, comment=comment)
+    else:
+
+        async def unisolate_endpoint():
+            async with EndpointAPI(config) as api:
+                await api.unisolate(endpoint_id, comment=comment)
+
+        asyncio.run(unisolate_endpoint())
+
     formatter.print_info(f"Removing isolation from endpoint: {endpoint_id}")
 
     if comment:
         formatter.print_info(f"Comment: {comment}")
 
-    formatter.print_success(
-        f"Isolation removed successfully (Mode: {'sync' if sync else 'async'})"
-    )
+    formatter.print_success("Isolation removed successfully")
 
 
 @endpoint.group()
@@ -233,6 +327,7 @@ def tamper() -> None:
 @add_output_options
 @add_sync_option
 @click.argument("endpoint_id")
+@handle_errors
 def status(
     endpoint_id: str,
     output: str,
@@ -249,19 +344,36 @@ def status(
     """
     formatter = OutputFormatter(color_enabled=not no_color)
 
-    formatter.print_warning("Not fully implemented yet - demo mode")
+    # Load configuration
+    try:
+        config = Config.from_file()
+    except FileNotFoundError:
+        config = Config.from_env()
 
-    # Demo data
-    demo_data = {
-        "endpoint_id": endpoint_id,
-        "enabled": True,
-        "globally_enabled": True,
-    }
-
-    if output == "json":
-        formatter.format_json(demo_data)
+    # Get tamper protection status
+    if sync:
+        with EndpointAPISync(config) as api:
+            tamper_status = api.get_tamper_protection(endpoint_id)
     else:
-        formatter.format_table([demo_data])
+
+        async def get_status():
+            async with EndpointAPI(config) as api:
+                return await api.get_tamper_protection(endpoint_id)
+
+        tamper_status = asyncio.run(get_status())
+
+    # Convert to dict
+    data = tamper_status.model_dump()
+
+    # Output
+    if output == "json":
+        formatter.format_json(data, output_file)
+    elif output == "csv":
+        formatter.format_csv([data], output_file)
+    else:
+        formatter.format_table([data])
+
+    formatter.print_success("Tamper protection status retrieved")
 
 
 @tamper.command()
@@ -278,6 +390,7 @@ def status(
     default=False,
     help="Regenerate tamper protection password",
 )
+@handle_errors
 def update(
     endpoint_id: str,
     sync: bool,
@@ -294,13 +407,32 @@ def update(
     """
     formatter = OutputFormatter()
 
-    formatter.print_warning("Not fully implemented yet - demo mode")
+    # Load configuration
+    try:
+        config = Config.from_file()
+    except FileNotFoundError:
+        config = Config.from_env()
+
+    # Update tamper protection
+    if sync:
+        with EndpointAPISync(config) as api:
+            api.update_tamper_protection(
+                endpoint_id, enabled=enable, regenerate_password=regenerate_password
+            )
+    else:
+
+        async def update_tamper():
+            async with EndpointAPI(config) as api:
+                await api.update_tamper_protection(
+                    endpoint_id, enabled=enable, regenerate_password=regenerate_password
+                )
+
+        asyncio.run(update_tamper())
+
     formatter.print_info(f"Updating tamper protection for: {endpoint_id}")
     formatter.print_info(f"Action: {'Enable' if enable else 'Disable'}")
 
     if regenerate_password:
         formatter.print_info("Regenerating password: Yes")
 
-    formatter.print_success(
-        f"Tamper protection updated (Mode: {'sync' if sync else 'async'})"
-    )
+    formatter.print_success("Tamper protection updated successfully")

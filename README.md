@@ -136,7 +136,7 @@ with EndpointAPISync(config) as api:
 
 ### 🚀 What's Working Now
 
-The library is fully functional for programmatic use:
+The software is fully functional for both library and CLI usage:
 
 ```python
 # Async API - Fully Implemented
@@ -147,11 +147,13 @@ async with EndpointAPI(config) as api:
 with EndpointAPISync(config) as api:
     endpoints = api.list()
 
-# CLI - Structure complete (demo mode)
+# CLI - Fully Functional with Real API Integration
 pysophos endpoint list --health-status bad
+pysophos alerts list --severity high
+pysophos tenants list
 ```
 
-**Note**: CLI commands currently return demo data. Full API integration coming in future phases.
+**All CLI commands now use real Sophos Central APIs!** The software is production-ready for monitoring, management, and automation tasks.
 
 ## 📦 Requirements
 

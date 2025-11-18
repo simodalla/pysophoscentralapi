@@ -170,6 +170,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Async and sync usage examples
     - Project statistics
     - Clear navigation to documentation
+- **CLI-API Integration (Complete)**
+  - **Endpoint Commands** (7 commands)
+    - Real API integration for list, get, scan, isolate, unisolate
+    - Tamper protection status and update
+    - Full async/sync support via --sync flag
+    - Error handling with @handle_errors decorator
+  - **Common API Commands** (5 commands)
+    - Alerts list and get with severity filtering
+    - Tenants list and get
+    - Admins list
+    - Roles list
+  - **Configuration Loading**
+    - Automatic fallback from file to environment variables
+    - Clear error messages for missing config
+  - **All Commands Production-Ready**
+    - No more "demo mode" messages
+    - Real data from Sophos Central APIs
+    - Complete error handling
+    - Support for all output formats (table/JSON/CSV)
 
 ### Documentation
 - Comprehensive planning documents

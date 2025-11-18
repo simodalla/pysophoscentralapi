@@ -1,9 +1,19 @@
 """Common API CLI commands."""
 
+import asyncio
+
 import click
 
+from pysophoscentralapi.api.common import CommonAPI
+from pysophoscentralapi.api.common.models import AlertFilters
 from pysophoscentralapi.cli.output import OutputFormatter
-from pysophoscentralapi.cli.utils import add_output_options, add_sync_option
+from pysophoscentralapi.cli.utils import (
+    add_output_options,
+    add_sync_option,
+    handle_errors,
+)
+from pysophoscentralapi.core.config import Config
+from pysophoscentralapi.sync.common import CommonAPISync
 
 
 @click.group()
@@ -32,6 +42,7 @@ def alerts() -> None:
     default=50,
     help="Number of items per page",
 )
+@handle_errors
 def alerts_list(
     output: str,
     output_file: str | None,
@@ -51,35 +62,43 @@ def alerts_list(
     """
     formatter = OutputFormatter(color_enabled=not no_color)
 
-    formatter.print_warning("Not fully implemented yet - demo mode")
+    # Load configuration
+    try:
+        config = Config.from_file()
+    except FileNotFoundError:
+        config = Config.from_env()
 
-    # Demo data
-    demo_data = {
-        "items": [
-            {
-                "id": "alert-1",
-                "severity": "high",
-                "description": "Malware detected",
-                "product": "endpoint",
-                "raised_at": "2025-11-17T10:00:00Z",
-            },
-            {
-                "id": "alert-2",
-                "severity": "critical",
-                "description": "Ransomware activity",
-                "product": "server",
-                "raised_at": "2025-11-17T09:30:00Z",
-            },
-        ]
-    }
+    # Build filters
+    filters = None
+    if severity:
+        filters = AlertFilters()
+        filters.severity = list(severity)
 
-    if output == "json":
-        formatter.format_json(demo_data)
-    elif output == "csv":
-        formatter.format_csv(demo_data["items"], output_file)
+    # Fetch data
+    if sync:
+        with CommonAPISync(config) as api:
+            alerts = api.alerts.list(page_size=page_size, filters=filters)
     else:
-        formatter.format_table(demo_data["items"])
 
+        async def fetch_data():
+            async with CommonAPI(config) as api:
+                return await api.alerts.list(page_size=page_size, filters=filters)
+
+        alerts = asyncio.run(fetch_data())
+
+    # Convert to dict format
+    items = [alert.model_dump() for alert in alerts]
+    data = {"items": items}
+
+    # Output
+    if output == "json":
+        formatter.format_json(data, output_file)
+    elif output == "csv":
+        formatter.format_csv(items, output_file)
+    else:
+        formatter.format_table(items)
+
+    formatter.print_success(f"Found {len(items)} alert(s)")
     if severity:
         formatter.print_info(f"Filtered by severity: {', '.join(severity)}")
     if product:
@@ -90,6 +109,7 @@ def alerts_list(
 @add_output_options
 @add_sync_option
 @click.argument("alert_id")
+@handle_errors
 def alerts_get(
     alert_id: str,
     output: str,
@@ -106,23 +126,36 @@ def alerts_get(
     """
     formatter = OutputFormatter(color_enabled=not no_color)
 
-    formatter.print_warning("Not fully implemented yet - demo mode")
+    # Load configuration
+    try:
+        config = Config.from_file()
+    except FileNotFoundError:
+        config = Config.from_env()
 
-    # Demo data
-    demo_data = {
-        "id": alert_id,
-        "severity": "high",
-        "description": "Malware detected on endpoint",
-        "category": "malware",
-        "product": "endpoint",
-        "raised_at": "2025-11-17T10:00:00Z",
-        "allowed_actions": ["acknowledge", "clearThreat"],
-    }
-
-    if output == "json":
-        formatter.format_json(demo_data)
+    # Fetch data
+    if sync:
+        with CommonAPISync(config) as api:
+            alert = api.alerts.get(alert_id)
     else:
-        formatter.format_table([demo_data])
+
+        async def fetch_data():
+            async with CommonAPI(config) as api:
+                return await api.alerts.get(alert_id)
+
+        alert = asyncio.run(fetch_data())
+
+    # Convert to dict
+    data = alert.model_dump()
+
+    # Output
+    if output == "json":
+        formatter.format_json(data, output_file)
+    elif output == "csv":
+        formatter.format_csv([data], output_file)
+    else:
+        formatter.format_table([data])
+
+    formatter.print_success(f"Retrieved alert: {alert_id}")
 
 
 @alerts.command()
@@ -172,6 +205,7 @@ def tenants() -> None:
     type=click.Choice(["us", "eu", "ap", "de", "ie"]),
     help="Filter by data region",
 )
+@handle_errors
 def tenants_list(
     output: str,
     output_file: str | None,
@@ -189,38 +223,44 @@ def tenants_list(
     """
     formatter = OutputFormatter(color_enabled=not no_color)
 
-    formatter.print_warning("Not fully implemented yet - demo mode")
+    # Load configuration
+    try:
+        config = Config.from_file()
+    except FileNotFoundError:
+        config = Config.from_env()
 
-    # Demo data
-    demo_data = {
-        "items": [
-            {
-                "id": "tenant-1",
-                "name": "Company A",
-                "data_region": "us",
-                "billing_type": "usage",
-            },
-            {
-                "id": "tenant-2",
-                "name": "Company B",
-                "data_region": "eu",
-                "billing_type": "user",
-            },
-        ]
-    }
-
-    if output == "json":
-        formatter.format_json(demo_data)
-    elif output == "csv":
-        formatter.format_csv(demo_data["items"], output_file)
+    # Fetch data
+    if sync:
+        with CommonAPISync(config) as api:
+            tenants = api.tenants.list()
     else:
-        formatter.format_table(demo_data["items"])
+
+        async def fetch_data():
+            async with CommonAPI(config) as api:
+                return await api.tenants.list()
+
+        tenants = asyncio.run(fetch_data())
+
+    # Convert to dict format
+    items = [tenant.model_dump() for tenant in tenants]
+    data = {"items": items}
+
+    # Output
+    if output == "json":
+        formatter.format_json(data, output_file)
+    elif output == "csv":
+        formatter.format_csv(items, output_file)
+    else:
+        formatter.format_table(items)
+
+    formatter.print_success(f"Found {len(items)} tenant(s)")
 
 
 @tenants.command("get")
 @add_output_options
 @add_sync_option
 @click.argument("tenant_id")
+@handle_errors
 def tenants_get(
     tenant_id: str,
     output: str,
@@ -237,21 +277,36 @@ def tenants_get(
     """
     formatter = OutputFormatter(color_enabled=not no_color)
 
-    formatter.print_warning("Not fully implemented yet - demo mode")
+    # Load configuration
+    try:
+        config = Config.from_file()
+    except FileNotFoundError:
+        config = Config.from_env()
 
-    # Demo data
-    demo_data = {
-        "id": tenant_id,
-        "name": "Company A",
-        "data_region": "us",
-        "billing_type": "usage",
-        "api_host": "https://api-us.central.sophos.com",
-    }
-
-    if output == "json":
-        formatter.format_json(demo_data)
+    # Fetch data
+    if sync:
+        with CommonAPISync(config) as api:
+            tenant = api.tenants.get(tenant_id)
     else:
-        formatter.format_table([demo_data])
+
+        async def fetch_data():
+            async with CommonAPI(config) as api:
+                return await api.tenants.get(tenant_id)
+
+        tenant = asyncio.run(fetch_data())
+
+    # Convert to dict
+    data = tenant.model_dump()
+
+    # Output
+    if output == "json":
+        formatter.format_json(data, output_file)
+    elif output == "csv":
+        formatter.format_csv([data], output_file)
+    else:
+        formatter.format_table([data])
+
+    formatter.print_success(f"Retrieved tenant: {tenant.name}")
 
 
 @click.group()
@@ -262,6 +317,7 @@ def admins() -> None:
 @admins.command("list")
 @add_output_options
 @add_sync_option
+@handle_errors
 def admins_list(
     output: str,
     output_file: str | None,
@@ -277,32 +333,37 @@ def admins_list(
     """
     formatter = OutputFormatter(color_enabled=not no_color)
 
-    formatter.print_warning("Not fully implemented yet - demo mode")
+    # Load configuration
+    try:
+        config = Config.from_file()
+    except FileNotFoundError:
+        config = Config.from_env()
 
-    # Demo data
-    demo_data = [
-        {
-            "id": "admin-1",
-            "first_name": "John",
-            "last_name": "Doe",
-            "email": "john.doe@example.com",
-            "role": "Admin",
-        },
-        {
-            "id": "admin-2",
-            "first_name": "Jane",
-            "last_name": "Smith",
-            "email": "jane.smith@example.com",
-            "role": "SuperAdmin",
-        },
-    ]
-
-    if output == "json":
-        formatter.format_json(demo_data)
-    elif output == "csv":
-        formatter.format_csv(demo_data, output_file)
+    # Fetch data
+    if sync:
+        with CommonAPISync(config) as api:
+            admins = api.admins.list()
     else:
-        formatter.format_table(demo_data)
+
+        async def fetch_data():
+            async with CommonAPI(config) as api:
+                return await api.admins.list()
+
+        admins = asyncio.run(fetch_data())
+
+    # Convert to dict format
+    items = [admin.model_dump() for admin in admins]
+    data = {"items": items}
+
+    # Output
+    if output == "json":
+        formatter.format_json(data, output_file)
+    elif output == "csv":
+        formatter.format_csv(items, output_file)
+    else:
+        formatter.format_table(items)
+
+    formatter.print_success(f"Found {len(items)} administrator(s)")
 
 
 @click.group()
@@ -313,6 +374,7 @@ def roles() -> None:
 @roles.command("list")
 @add_output_options
 @add_sync_option
+@handle_errors
 def roles_list(
     output: str,
     output_file: str | None,
@@ -328,27 +390,34 @@ def roles_list(
     """
     formatter = OutputFormatter(color_enabled=not no_color)
 
-    formatter.print_warning("Not fully implemented yet - demo mode")
+    # Load configuration
+    try:
+        config = Config.from_file()
+    except FileNotFoundError:
+        config = Config.from_env()
 
-    # Demo data
-    demo_data = [
-        {
-            "id": "role-1",
-            "name": "Admin",
-            "description": "Administrator role",
-            "builtin": True,
-        },
-        {
-            "id": "role-2",
-            "name": "SuperAdmin",
-            "description": "Super administrator role",
-            "builtin": True,
-        },
-    ]
-
-    if output == "json":
-        formatter.format_json(demo_data)
-    elif output == "csv":
-        formatter.format_csv(demo_data, output_file)
+    # Fetch data
+    if sync:
+        with CommonAPISync(config) as api:
+            roles = api.roles.list()
     else:
-        formatter.format_table(demo_data)
+
+        async def fetch_data():
+            async with CommonAPI(config) as api:
+                return await api.roles.list()
+
+        roles = asyncio.run(fetch_data())
+
+    # Convert to dict format
+    items = [role.model_dump() for role in roles]
+    data = {"items": items}
+
+    # Output
+    if output == "json":
+        formatter.format_json(data, output_file)
+    elif output == "csv":
+        formatter.format_csv(items, output_file)
+    else:
+        formatter.format_table(items)
+
+    formatter.print_success(f"Found {len(items)} role(s)")
