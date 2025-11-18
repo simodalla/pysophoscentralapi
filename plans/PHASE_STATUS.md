@@ -1,7 +1,7 @@
 # PySophosCentralApi - Phase Completion Status
 
 **Last Updated**: November 18, 2025  
-**Project Progress**: 5/10 Phases Complete (50%)
+**Project Progress**: 6/10 Phases Complete (60%)
 
 ---
 
@@ -167,28 +167,74 @@
 
 ---
 
-## 📊 Overall Statistics (Phases 1-5)
+## 📊 Overall Statistics (Phases 1-6)
 
 | Metric | Value |
 |--------|-------|
-| **Total Tests** | 128 passing (100% pass rate) |
-| **Code Coverage** | 67% overall |
-| **Lines of Code** | ~7,500+ |
-| **Implementation Modules** | 33 modules |
-| **Test Modules** | 18 modules |
-| **Phases Complete** | 5 / 10 (50%) |
-| **Weeks Elapsed** | 9 / 14 (64%) |
+| **Total Tests** | 219 passing (100% pass rate) |
+| **Code Coverage** | 72% overall |
+| **Lines of Code** | ~8,700+ |
+| **Implementation Modules** | 39 modules |
+| **Test Modules** | 22 modules |
+| **Phases Complete** | 6 / 10 (60%) |
+| **Weeks Elapsed** | 10 / 14 (71%) |
+
+### Phase 6: Filtering & Advanced Features (Week 10) ✅ COMPLETE
+
+**Deliverables:**
+- Complete filter system with fluent interface
+- Query builders for unified query construction
+- Pagination helper utilities
+- Sorting utilities with multi-field support
+- Search builder for text queries
+- 91 unit tests
+
+**Key Files:**
+- `src/pysophoscentralapi/filters/` (6 modules)
+- `tests/unit/test_filters/` (4 test modules)
+
+**Features:**
+- **FilterBuilder**:
+  - Fluent interface with method chaining
+  - Filter operators: equals, not_equals, contains, in_list, between, is_null, etc.
+  - Date range filters
+  - Validation support
+  - Conversion to API parameters
+
+- **QueryBuilder**:
+  - Unified interface for filters + sorting + pagination
+  - Field selection support
+  - Result limit control
+  - Build method returns complete query params
+
+- **SortBuilder**:
+  - Multi-field sorting
+  - Ascending/descending directions
+  - Sort reversal
+  - Custom separators
+  - Parameter conversion
+
+- **PaginationHelper**:
+  - Offset/page calculations
+  - Total pages calculation
+  - Page info with navigation flags
+  - Page size recommendations
+  - Validation utilities
+
+- **SearchBuilder**:
+  - Multi-term text search
+  - AND/OR logic operators
+  - Field-specific search
+  - Query string building
+
+**Metrics:**
+- 91 tests passing
+- ~1,200 lines of code
+- 98-100% code coverage for filters
 
 ---
 
 ## 🚧 Remaining Phases
-
-### Phase 6: Advanced Features (Week 10)
-- [ ] Filter system enhancements
-- [ ] Query builders
-- [ ] Advanced pagination helpers
-- [ ] Sorting utilities
-- [ ] Search functionality
 
 ### Phase 7: Documentation (Week 11)
 - [ ] User documentation
@@ -282,7 +328,8 @@ pysophoscentralapi/
 | Phase 3 | 30 | 78-100% | 1,500 | ✅ |
 | Phase 4 | 37 | 54-81% | 2,000 | ✅ |
 | Phase 5 | 32 | 88-91% | 1,500 | ✅ |
-| **Total** | **128** | **67%** | **7,500** | **5/10** |
+| Phase 6 | 91 | 98-100% | 1,200 | ✅ |
+| **Total** | **219** | **72%** | **8,700** | **6/10** |
 
 ---
 
