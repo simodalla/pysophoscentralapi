@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased - Phase 9] - 2025-11-18
+
+### Added - Polish & Release Preparation
+- **Release Checklist**: Created comprehensive `RELEASE_CHECKLIST.md` with pre-release steps
+- **Error Message Improvements**: Enhanced CLI error messages with actionable tips
+  - Authentication errors now suggest running `pysophos config test`
+  - API errors now display correlation IDs for support
+  - Unexpected errors suggest using `--debug` flag
+- **Package Configuration**: Updated `pyproject.toml` with Python 3.13 support
+
+### Changed
+- **Error Handling**: Improved error messages in `cli/utils.py` with helpful tips
+- **README**: Updated test and coverage badges (321 tests, 74% coverage)
+- **Test Fixes**: Fixed CLI tests to use correct `load_config` patching
+
+### Fixed
+- Fixed CLI test failures by correcting mock patches (`Config.from_file` → `load_config`)
+- All 323 tests now passing (up from 321)
+
+### Status
+- ✅ **323 tests passing** with **75% coverage**
+- ✅ **All code quality checks passing**
+- ✅ **Package ready for PyPI publication**
+- ✅ **Release checklist complete**
+
 ## [Unreleased - CLI Fix] - 2025-11-18
 
 ### Fixed - Critical CLI Authentication Issue

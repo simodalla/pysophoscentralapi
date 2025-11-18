@@ -162,9 +162,7 @@ def test(ctx: click.Context, config_file: str | None) -> None:
 
     # Load configuration
     # Local --config-file takes precedence over global one
-    config_obj = (
-        Config.from_file(Path(config_file)) if config_file else load_config()
-    )
+    config_obj = Config.from_file(Path(config_file)) if config_file else load_config()
 
     # Test authentication
     formatter.print_info("Step 1: Testing authentication...")

@@ -40,16 +40,22 @@ def handle_errors(func: Callable) -> Callable:
         except AuthenticationError as e:
             formatter = OutputFormatter()
             formatter.print_error(f"Authentication failed: {e}")
+            formatter.print_info(
+                "Tip: Verify your credentials with 'pysophos config test'"
+            )
             sys.exit(1)
         except SophosAPIException as e:
             formatter = OutputFormatter()
             formatter.print_error(f"API error: {e}")
             if hasattr(e, "status_code"):
                 formatter.print_info(f"Status code: {e.status_code}")
+            if hasattr(e, "correlation_id") and e.correlation_id:
+                formatter.print_info(f"Correlation ID: {e.correlation_id}")
             sys.exit(1)
         except Exception as e:
             formatter = OutputFormatter()
             formatter.print_error(f"Unexpected error: {e}")
+            formatter.print_info("Run with --debug for more details")
             if "--debug" in sys.argv or "-d" in sys.argv:
                 raise
             sys.exit(1)

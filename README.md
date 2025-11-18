@@ -4,8 +4,8 @@ A professional-grade Python library and CLI application for interacting with Sop
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Tests](https://img.shields.io/badge/tests-219%20passing-brightgreen.svg)](tests/)
-[![Coverage](https://img.shields.io/badge/coverage-72%25-green.svg)](htmlcov/)
+[![Tests](https://img.shields.io/badge/tests-321%20passing-brightgreen.svg)](tests/)
+[![Coverage](https://img.shields.io/badge/coverage-74%25-green.svg)](htmlcov/)
 
 ## ✨ Features
 
@@ -19,7 +19,7 @@ A professional-grade Python library and CLI application for interacting with Sop
 - ⚡ **High Performance**: Built on modern async Python with httpx
 - 🛡️ **Type-Safe**: Complete type hints for better IDE support
 - 🔐 **Secure**: OAuth2 authentication with proper credential handling
-- ✅ **Well-Tested**: 219 tests passing with 72% coverage
+- ✅ **Well-Tested**: 321 tests passing with 74% coverage
 
 ## Quick Start
 

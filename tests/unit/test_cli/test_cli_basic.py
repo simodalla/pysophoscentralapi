@@ -102,7 +102,7 @@ class TestCLICommands:
             api=APIConfig(region="us"),
         )
 
-    @patch("pysophoscentralapi.cli.endpoint_cmds.Config.from_file")
+    @patch("pysophoscentralapi.cli.endpoint_cmds.load_config")
     @patch("pysophoscentralapi.cli.endpoint_cmds.create_endpoint_api_sync")
     def test_endpoint_list_demo(self, mock_create_api, mock_config):
         """Test endpoint list command with mocked API."""
@@ -128,7 +128,7 @@ class TestCLICommands:
         assert result.exit_code == 0
         assert "DESKTOP-001" in result.output or "Found 1 endpoint" in result.output
 
-    @patch("pysophoscentralapi.cli.endpoint_cmds.Config.from_file")
+    @patch("pysophoscentralapi.cli.endpoint_cmds.load_config")
     @patch("pysophoscentralapi.cli.endpoint_cmds.create_endpoint_api_sync")
     def test_endpoint_list_json(self, mock_create_api, mock_config):
         """Test endpoint list with JSON output."""
@@ -153,7 +153,7 @@ class TestCLICommands:
         assert result.exit_code == 0
         assert "endpoint-1" in result.output or "DESKTOP-001" in result.output
 
-    @patch("pysophoscentralapi.cli.common_cmds.Config.from_file")
+    @patch("pysophoscentralapi.cli.common_cmds.load_config")
     @patch("pysophoscentralapi.cli.common_cmds.create_common_api_sync")
     def test_alerts_list_demo(self, mock_create_api, mock_config):
         """Test alerts list command with mocked API."""
@@ -179,7 +179,7 @@ class TestCLICommands:
         assert result.exit_code == 0
         assert "Found 1 alert" in result.output or "alert-1" in result.output
 
-    @patch("pysophoscentralapi.cli.common_cmds.Config.from_file")
+    @patch("pysophoscentralapi.cli.common_cmds.load_config")
     @patch("pysophoscentralapi.cli.common_cmds.create_common_api_sync")
     def test_alerts_list_with_severity(self, mock_create_api, mock_config):
         """Test alerts list with severity filter."""
@@ -218,7 +218,7 @@ class TestCLICommands:
             "Found 1 alert" in result.output or "Filtered by severity" in result.output
         )
 
-    @patch("pysophoscentralapi.cli.common_cmds.Config.from_file")
+    @patch("pysophoscentralapi.cli.common_cmds.load_config")
     @patch("pysophoscentralapi.cli.common_cmds.create_common_api_sync")
     def test_tenants_list_demo(self, mock_create_api, mock_config):
         """Test tenants list command with mocked API."""
@@ -242,7 +242,7 @@ class TestCLICommands:
         assert result.exit_code == 0
         assert "Found 1 tenant" in result.output or "Test Company" in result.output
 
-    @patch("pysophoscentralapi.cli.endpoint_cmds.Config.from_file")
+    @patch("pysophoscentralapi.cli.endpoint_cmds.load_config")
     @patch("pysophoscentralapi.cli.endpoint_cmds.create_endpoint_api_sync")
     def test_endpoint_scan_demo(self, mock_create_api, mock_config):
         """Test endpoint scan command with mocked API."""
@@ -258,7 +258,7 @@ class TestCLICommands:
         assert result.exit_code == 0
         assert "Scan triggered" in result.output or "test-endpoint-123" in result.output
 
-    @patch("pysophoscentralapi.cli.endpoint_cmds.Config.from_file")
+    @patch("pysophoscentralapi.cli.endpoint_cmds.load_config")
     @patch("pysophoscentralapi.cli.endpoint_cmds.create_endpoint_api_sync")
     def test_endpoint_tamper_status(self, mock_create_api, mock_config):
         """Test endpoint tamper status command with mocked API."""
