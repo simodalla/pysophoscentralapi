@@ -37,9 +37,9 @@ class PageInfo(SophosBaseModel):
         max_size: Maximum allowed page size
     """
 
-    current: int
+    current: int | None = None
     size: int
-    total: int
+    total: int | None = None
     from_key: str | None = Field(None, alias="fromKey")
     next_key: str | None = Field(None, alias="nextKey")
     max_size: int = Field(alias="maxSize")

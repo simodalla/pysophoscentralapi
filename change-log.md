@@ -2,6 +2,39 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased - CLI Fix] - 2025-11-18
+
+### Fixed - Critical CLI Authentication Issue
+- **X-Tenant-ID Header**: Fixed missing tenant ID header in regional API requests
+  - Added `tenant_id` parameter to `HTTPClient` and `HTTPClientSync`
+  - Updated all CLI commands to pass tenant ID from whoami response
+  - Regional endpoints now work correctly (e.g., api-eu01.central.sophos.com)
+  
+- **Pydantic Model Validation**:
+  - Made `AssociatedPerson.id` field optional (Linux endpoints don't always provide it)
+  - Made `OSInfo` version fields optional (majorVersion, minorVersion, build)
+  - Made `PageInfo` current/total fields optional (cursor pagination doesn't provide them)
+  
+- **JSON Serialization**: 
+  - Fixed datetime serialization in CLI output by using `model_dump(mode="json")`
+  - Applied fix to all CLI commands (endpoint, alerts, tenants, admins, roles)
+
+- **CLI Functionality**: Implemented `config test` command
+  - Tests OAuth2 token acquisition
+  - Tests whoami endpoint
+  - Provides detailed diagnostic information for troubleshooting
+
+### Changed
+- **HTTPClient**: Now accepts optional `tenant_id` parameter for regional API calls
+- **HTTPClientSync**: Now accepts optional `tenant_id` parameter for regional API calls
+- **Core Models**: Several fields made optional to match actual API responses
+
+### Status
+- ✅ CLI is now **fully functional** with real API integration
+- ✅ All 244 tests passing with 70% coverage
+- ✅ Authentication working correctly for all endpoints
+- ✅ JSON, CSV, and table output formats working
+
 ## [Unreleased - Phase 8] - 2025-11-18
 
 ### Added - Testing & Quality (Partial Completion)

@@ -37,6 +37,7 @@ class HTTPClientSync:
         auth: OAuth2ClientCredentials,
         timeout: int = 30,
         max_retries: int = 3,
+        tenant_id: str | None = None,
     ) -> None:
         """Initialize the synchronous HTTP client.
 
@@ -45,11 +46,13 @@ class HTTPClientSync:
             auth: Authentication provider
             timeout: Request timeout in seconds (default: 30)
             max_retries: Maximum number of retry attempts (default: 3)
+            tenant_id: Optional tenant ID for regional endpoints
         """
         self.base_url = base_url
         self.auth = auth
         self.timeout = timeout
         self.max_retries = max_retries
+        self.tenant_id = tenant_id
         self._async_client: HTTPClient | None = None
 
     def __enter__(self) -> "HTTPClientSync":
@@ -60,9 +63,10 @@ class HTTPClientSync:
         """
         self._async_client = HTTPClient(
             base_url=self.base_url,
-            auth=self.auth,
+            auth_provider=self.auth,
             timeout=self.timeout,
             max_retries=self.max_retries,
+            tenant_id=self.tenant_id,
         )
 
         async def async_enter():

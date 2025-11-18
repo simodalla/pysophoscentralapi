@@ -87,7 +87,8 @@ def alerts_list(
             # Create auth and get base URL
             auth = OAuth2ClientCredentials(config.auth)
             whoami_response = await auth.whoami()
-            base_url = whoami_response.api_hosts.dataRegion
+            base_url = whoami_response.api_host_data_region
+            tenant_id = whoami_response.id
 
             # Create HTTP client and API
             async with HTTPClient(
@@ -95,6 +96,7 @@ def alerts_list(
                 auth_provider=auth,
                 timeout=config.api.timeout,
                 max_retries=config.api.max_retries,
+                tenant_id=tenant_id,
             ) as http_client:
                 api = CommonAPI(http_client)
                 response = await api.alerts.list_alerts(filters=filters)
@@ -103,7 +105,7 @@ def alerts_list(
         alerts_items = asyncio.run(fetch_data())
 
     # Convert to dict format
-    items = [alert.model_dump() for alert in alerts_items]
+    items = [alert.model_dump(mode="json") for alert in alerts_items]
     data = {"items": items}
 
     # Output
@@ -158,7 +160,8 @@ def alerts_get(
             # Create auth and get base URL
             auth = OAuth2ClientCredentials(config.auth)
             whoami_response = await auth.whoami()
-            base_url = whoami_response.api_hosts.dataRegion
+            base_url = whoami_response.api_host_data_region
+            tenant_id = whoami_response.id
 
             # Create HTTP client and API
             async with HTTPClient(
@@ -166,6 +169,7 @@ def alerts_get(
                 auth_provider=auth,
                 timeout=config.api.timeout,
                 max_retries=config.api.max_retries,
+                tenant_id=tenant_id,
             ) as http_client:
                 api = CommonAPI(http_client)
                 return await api.alerts.get_alert(alert_id)
@@ -173,7 +177,7 @@ def alerts_get(
         alert = asyncio.run(fetch_data())
 
     # Convert to dict
-    data = alert.model_dump()
+    data = alert.model_dump(mode="json")
 
     # Output
     if output == "json":
@@ -268,7 +272,8 @@ def tenants_list(
             # Create auth and get base URL
             auth = OAuth2ClientCredentials(config.auth)
             whoami_response = await auth.whoami()
-            base_url = whoami_response.api_hosts.dataRegion
+            base_url = whoami_response.api_host_data_region
+            tenant_id = whoami_response.id
 
             # Create HTTP client and API
             async with HTTPClient(
@@ -276,6 +281,7 @@ def tenants_list(
                 auth_provider=auth,
                 timeout=config.api.timeout,
                 max_retries=config.api.max_retries,
+                tenant_id=tenant_id,
             ) as http_client:
                 api = CommonAPI(http_client)
                 response = await api.tenants.list_tenants()
@@ -284,7 +290,7 @@ def tenants_list(
         tenants_items = asyncio.run(fetch_data())
 
     # Convert to dict format
-    items = [tenant.model_dump() for tenant in tenants_items]
+    items = [tenant.model_dump(mode="json") for tenant in tenants_items]
     data = {"items": items}
 
     # Output
@@ -335,7 +341,8 @@ def tenants_get(
             # Create auth and get base URL
             auth = OAuth2ClientCredentials(config.auth)
             whoami_response = await auth.whoami()
-            base_url = whoami_response.api_hosts.dataRegion
+            base_url = whoami_response.api_host_data_region
+            tenant_id = whoami_response.id
 
             # Create HTTP client and API
             async with HTTPClient(
@@ -343,6 +350,7 @@ def tenants_get(
                 auth_provider=auth,
                 timeout=config.api.timeout,
                 max_retries=config.api.max_retries,
+                tenant_id=tenant_id,
             ) as http_client:
                 api = CommonAPI(http_client)
                 return await api.tenants.get_tenant(tenant_id)
@@ -350,7 +358,7 @@ def tenants_get(
         tenant = asyncio.run(fetch_data())
 
     # Convert to dict
-    data = tenant.model_dump()
+    data = tenant.model_dump(mode="json")
 
     # Output
     if output == "json":
@@ -404,7 +412,8 @@ def admins_list(
             # Create auth and get base URL
             auth = OAuth2ClientCredentials(config.auth)
             whoami_response = await auth.whoami()
-            base_url = whoami_response.api_hosts.dataRegion
+            base_url = whoami_response.api_host_data_region
+            tenant_id = whoami_response.id
 
             # Create HTTP client and API
             async with HTTPClient(
@@ -412,6 +421,7 @@ def admins_list(
                 auth_provider=auth,
                 timeout=config.api.timeout,
                 max_retries=config.api.max_retries,
+                tenant_id=tenant_id,
             ) as http_client:
                 api = CommonAPI(http_client)
                 response = await api.admins.list_admins()
@@ -420,7 +430,7 @@ def admins_list(
         admins_items = asyncio.run(fetch_data())
 
     # Convert to dict format
-    items = [admin.model_dump() for admin in admins_items]
+    items = [admin.model_dump(mode="json") for admin in admins_items]
     data = {"items": items}
 
     # Output
@@ -475,7 +485,8 @@ def roles_list(
             # Create auth and get base URL
             auth = OAuth2ClientCredentials(config.auth)
             whoami_response = await auth.whoami()
-            base_url = whoami_response.api_hosts.dataRegion
+            base_url = whoami_response.api_host_data_region
+            tenant_id = whoami_response.id
 
             # Create HTTP client and API
             async with HTTPClient(
@@ -483,6 +494,7 @@ def roles_list(
                 auth_provider=auth,
                 timeout=config.api.timeout,
                 max_retries=config.api.max_retries,
+                tenant_id=tenant_id,
             ) as http_client:
                 api = CommonAPI(http_client)
                 response = await api.roles.list_roles()
@@ -491,7 +503,7 @@ def roles_list(
         roles_items = asyncio.run(fetch_data())
 
     # Convert to dict format
-    items = [role.model_dump() for role in roles_items]
+    items = [role.model_dump(mode="json") for role in roles_items]
     data = {"items": items}
 
     # Output

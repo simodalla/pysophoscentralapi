@@ -1,10 +1,14 @@
 """Configuration commands for CLI."""
 
+import asyncio
 from pathlib import Path
 
 import click
 
 from pysophoscentralapi.cli.output import OutputFormatter
+from pysophoscentralapi.cli.utils import handle_errors
+from pysophoscentralapi.core.auth import OAuth2ClientCredentials
+from pysophoscentralapi.core.config import Config
 
 
 @click.group()
@@ -137,7 +141,14 @@ def show(config_file: str | None) -> None:
 
 
 @config.command()
-def test() -> None:
+@click.option(
+    "--config-file",
+    type=click.Path(exists=True),
+    default=None,
+    help="Config file path",
+)
+@handle_errors
+def test(config_file: str | None) -> None:
     """Test API connection with current configuration.
 
     \b
@@ -146,5 +157,34 @@ def test() -> None:
     """
     formatter = OutputFormatter()
     formatter.print_info("Testing API connection...")
-    formatter.print_warning("Not implemented yet - coming soon!")
-    # TODO: Implement actual API connection test
+
+    # Load configuration
+    config = Config.from_file(config_file) if config_file else Config.from_file()
+
+    # Test authentication
+    formatter.print_info("Step 1: Testing authentication...")
+    auth = OAuth2ClientCredentials(config.auth)
+
+    try:
+        token = asyncio.run(auth.get_token())
+        formatter.print_success("✓ Authentication successful")
+        formatter.print_info(f"  Token type: {token.token_type}")
+        formatter.print_info(f"  Expires at: {token.expires_at}")
+    except Exception as e:
+        formatter.print_error(f"✗ Authentication failed: {e}")
+        return
+
+    # Test whoami endpoint
+    formatter.print_info("Step 2: Testing whoami endpoint...")
+    try:
+        whoami = asyncio.run(auth.whoami())
+        formatter.print_success("✓ Whoami request successful")
+        formatter.print_info(f"  Organization ID: {whoami.id}")
+        formatter.print_info(f"  ID Type: {whoami.id_type}")
+        formatter.print_info(f"  Global API: {whoami.api_host_global}")
+        formatter.print_info(f"  Data Region API: {whoami.api_host_data_region}")
+    except Exception as e:
+        formatter.print_error(f"✗ Whoami request failed: {e}")
+        return
+
+    formatter.print_success("\n✓ All tests passed! Configuration is valid.")

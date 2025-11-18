@@ -69,7 +69,7 @@ def _convert_to_dicts(items: list) -> list[dict]:
     dict_items = []
     for item in items:
         if hasattr(item, "model_dump"):
-            dict_items.append(item.model_dump())
+            dict_items.append(item.model_dump(mode="json"))
         elif isinstance(item, dict):
             dict_items.append(item)
         else:
@@ -170,9 +170,10 @@ def create_endpoint_api_sync(config: Config):
     # Create auth provider
     auth = OAuth2ClientCredentials(config.auth)
 
-    # Get whoami to determine base URL
+    # Get whoami to determine base URL and tenant ID
     whoami_response = asyncio.run(auth.whoami())
-    base_url = whoami_response.api_hosts.dataRegion
+    base_url = whoami_response.api_host_data_region
+    tenant_id = whoami_response.id
 
     # Create HTTP client and API
     with HTTPClientSync(
@@ -180,6 +181,7 @@ def create_endpoint_api_sync(config: Config):
         auth_provider=auth,
         timeout=config.api.timeout,
         max_retries=config.api.max_retries,
+        tenant_id=tenant_id,
     ) as http_client:
         yield EndpointAPISync(http_client)
 
@@ -197,9 +199,10 @@ def create_common_api_sync(config: Config):
     # Create auth provider
     auth = OAuth2ClientCredentials(config.auth)
 
-    # Get whoami to determine base URL
+    # Get whoami to determine base URL and tenant ID
     whoami_response = asyncio.run(auth.whoami())
-    base_url = whoami_response.api_hosts.dataRegion
+    base_url = whoami_response.api_host_data_region
+    tenant_id = whoami_response.id
 
     # Create HTTP client and API
     with HTTPClientSync(
@@ -207,5 +210,6 @@ def create_common_api_sync(config: Config):
         auth_provider=auth,
         timeout=config.api.timeout,
         max_retries=config.api.max_retries,
+        tenant_id=tenant_id,
     ) as http_client:
         yield CommonAPISync(http_client)

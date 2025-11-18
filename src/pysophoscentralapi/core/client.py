@@ -48,6 +48,7 @@ class HTTPClient:
         timeout: int = 30,
         max_retries: int = 3,
         rate_limit_retry: bool = True,
+        tenant_id: str | None = None,
     ) -> None:
         """Initialize the HTTP client.
 
@@ -57,12 +58,14 @@ class HTTPClient:
             timeout: Request timeout in seconds
             max_retries: Maximum retry attempts
             rate_limit_retry: Enable rate limit retries
+            tenant_id: Optional tenant ID for regional endpoints
         """
         self.base_url = base_url.rstrip("/")
         self.auth_provider = auth_provider
         self.timeout = timeout
         self.max_retries = max_retries
         self.rate_limit_retry = rate_limit_retry
+        self.tenant_id = tenant_id
         self._client: httpx.AsyncClient | None = None
 
     async def __aenter__(self) -> "HTTPClient":
@@ -130,6 +133,11 @@ class HTTPClient:
 
         # Merge headers
         request_headers = {**auth_headers}
+
+        # Add tenant ID header for regional endpoints
+        if self.tenant_id:
+            request_headers["X-Tenant-ID"] = self.tenant_id
+
         if headers:
             request_headers.update(headers)
 

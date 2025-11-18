@@ -118,9 +118,9 @@ class OSInfo(SophosBaseModel):
     is_server: bool = Field(alias="isServer")
     platform: OSPlatform
     name: str
-    major_version: int = Field(alias="majorVersion")
-    minor_version: int = Field(alias="minorVersion")
-    build: int
+    major_version: int | None = Field(None, alias="majorVersion")
+    minor_version: int | None = Field(None, alias="minorVersion")
+    build: int | None = None
 
 
 class Tenant(SophosBaseModel):
@@ -142,7 +142,7 @@ class AssociatedPerson(SophosBaseModel):
         via_login: Login identifier
     """
 
-    id: str
+    id: str | None = None
     name: str | None = None
     via_login: str | None = Field(None, alias="viaLogin")
 
