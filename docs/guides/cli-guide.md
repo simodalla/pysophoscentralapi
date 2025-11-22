@@ -100,9 +100,21 @@ Manage and query endpoints.
 
 List endpoints with optional filtering.
 
-**Options:**
+**Filter Options:**
 - `--health-status [good|suspicious|bad|unknown]` - Filter by health status
 - `--endpoint-type [computer|server|securityVm]` - Filter by endpoint type
+- `--lockdown-status [...]` - Filter by lockdown status (creatingWhitelist, installing, locked, notInstalled, registering, starting, stopping, unavailable, uninstalled, unlocked)
+- `--tamper-protection / --no-tamper-protection` - Filter by tamper protection status
+- `--hostname-contains TEXT` - Filter by hostname substring
+- `--last-seen-before TEXT` - Filter endpoints last seen before (ISO 8601: YYYY-MM-DDTHH:MM:SS)
+- `--last-seen-after TEXT` - Filter endpoints last seen after (ISO 8601: YYYY-MM-DDTHH:MM:SS)
+- `--ids TEXT` - Filter by endpoint IDs (comma-separated)
+- `--ip-addresses TEXT` - Filter by IP addresses (comma-separated)
+- `--mac-addresses TEXT` - Filter by MAC addresses (comma-separated)
+- `--search TEXT` - Search query across endpoint fields
+
+**Output Options:**
+- `--view [basic|summary|full]` - Detail level for results (default: summary)
 - `--page-size INTEGER` - Number of items per page (1-1000, default: 50)
 - `--all-pages` - Fetch all pages
 - `--output [table|json|csv]` - Output format (default: table)
@@ -121,8 +133,23 @@ pysophos endpoint list --health-status bad
 # Multiple filters
 pysophos endpoint list --health-status bad --endpoint-type server
 
-# Export to JSON
-pysophos endpoint list --output json -f endpoints.json
+# Filter by hostname
+pysophos endpoint list --hostname-contains "web-server"
+
+# Filter by last seen date
+pysophos endpoint list --last-seen-after 2024-01-01T00:00:00
+
+# Filter by tamper protection and get full details
+pysophos endpoint list --tamper-protection --view full
+
+# Search across all fields
+pysophos endpoint list --search "192.168.1"
+
+# Filter by specific endpoint IDs
+pysophos endpoint list --ids "id1,id2,id3"
+
+# Export to JSON with multiple filters
+pysophos endpoint list --health-status bad --endpoint-type server --output json -f endpoints.json
 
 # Export all pages to CSV
 pysophos endpoint list --all-pages --output csv -f all_endpoints.csv

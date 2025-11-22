@@ -9,6 +9,17 @@ All notable changes to this project will be documented in this file.
   - `RELEASE_NOTES_v0.1.0.md` - Complete release notes with features and getting started
   - `PACKAGE_RELEASE_INSTRUCTIONS.md` - Step-by-step release process guide
   - `plans/PHASE10_SUMMARY.md` - Phase 10 status and completion summary
+- **Enhanced CLI Filtering**: Added comprehensive filter parameters to `endpoint list` command
+  - `--lockdown-status`: Filter by lockdown status (10 options)
+  - `--tamper-protection/--no-tamper-protection`: Filter by tamper protection status
+  - `--hostname-contains`: Filter by hostname substring
+  - `--last-seen-before/--last-seen-after`: Filter by last seen date (ISO 8601 format)
+  - `--ids`: Filter by specific endpoint IDs (comma-separated)
+  - `--ip-addresses`: Filter by IP addresses (comma-separated)
+  - `--mac-addresses`: Filter by MAC addresses (comma-separated)
+  - `--search`: Search query across endpoint fields
+  - `--view`: Detail level control (basic/summary/full)
+  - Updated examples in command help text
 
 ### Fixed
 - **Config Test**: Fixed `test_from_file_invalid_config` test logic *(Bug fix)*

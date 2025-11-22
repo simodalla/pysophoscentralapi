@@ -1,11 +1,17 @@
 """Endpoint API CLI commands."""
 
 import asyncio
+from datetime import datetime
 
 import click
 
 from pysophoscentralapi.api.endpoint import EndpointAPI
-from pysophoscentralapi.api.endpoint.models import EndpointFilters, HealthStatus
+from pysophoscentralapi.api.endpoint.models import (
+    EndpointFilters,
+    EndpointType,
+    HealthStatus,
+    LockdownStatus,
+)
 from pysophoscentralapi.cli.output import OutputFormatter
 from pysophoscentralapi.cli.utils import (
     add_output_options,
@@ -37,6 +43,70 @@ def endpoint() -> None:
     help="Filter by endpoint type",
 )
 @click.option(
+    "--lockdown-status",
+    type=click.Choice(
+        [
+            "creatingWhitelist",
+            "installing",
+            "locked",
+            "notInstalled",
+            "registering",
+            "starting",
+            "stopping",
+            "unavailable",
+            "uninstalled",
+            "unlocked",
+        ]
+    ),
+    help="Filter by lockdown status",
+)
+@click.option(
+    "--tamper-protection/--no-tamper-protection",
+    default=None,
+    help="Filter by tamper protection status",
+)
+@click.option(
+    "--hostname-contains",
+    type=str,
+    help="Filter by hostname substring",
+)
+@click.option(
+    "--last-seen-before",
+    type=str,
+    help="Filter endpoints last seen before (ISO 8601: YYYY-MM-DDTHH:MM:SS)",
+)
+@click.option(
+    "--last-seen-after",
+    type=str,
+    help="Filter endpoints last seen after (ISO 8601: YYYY-MM-DDTHH:MM:SS)",
+)
+@click.option(
+    "--ids",
+    type=str,
+    help="Filter by endpoint IDs (comma-separated)",
+)
+@click.option(
+    "--ip-addresses",
+    type=str,
+    help="Filter by IP addresses (comma-separated)",
+)
+@click.option(
+    "--mac-addresses",
+    type=str,
+    help="Filter by MAC addresses (comma-separated)",
+)
+@click.option(
+    "--search",
+    type=str,
+    help="Search query across endpoint fields",
+)
+@click.option(
+    "--view",
+    type=click.Choice(["basic", "summary", "full"]),
+    default="summary",
+    help="Detail level for results (default: summary)",
+)
+@click.option(
     "--page-size",
     type=int,
     default=50,
@@ -49,13 +119,23 @@ def endpoint() -> None:
     help="Fetch all pages",
 )
 @handle_errors
-def endpoint_list(
+def endpoint_list(  # noqa: PLR0912, PLR0915
     output: str,
     output_file: str | None,
     no_color: bool,
     sync: bool,
     health_status: str | None,
     endpoint_type: str | None,
+    lockdown_status: str | None,
+    tamper_protection: bool | None,
+    hostname_contains: str | None,
+    last_seen_before: str | None,
+    last_seen_after: str | None,
+    ids: str | None,
+    ip_addresses: str | None,
+    mac_addresses: str | None,
+    search: str | None,
+    view: str,
     page_size: int,
     all_pages: bool,
 ) -> None:
@@ -63,9 +143,25 @@ def endpoint_list(
 
     \b
     Examples:
+        # Basic listing
         pysophos endpoint list
+
+        # Filter by health status
         pysophos endpoint list --health-status bad
-        pysophos endpoint list --endpoint-type server --output json
+
+        # Filter by endpoint type and tamper protection
+        pysophos endpoint list --endpoint-type server --tamper-protection
+
+        # Search by hostname
+        pysophos endpoint list --hostname-contains "web-server"
+
+        # Filter by last seen date
+        pysophos endpoint list --last-seen-after 2024-01-01T00:00:00
+
+        # Multiple filters with full detail view
+        pysophos endpoint list --health-status bad --view full --output json
+
+        # Export all pages to CSV
         pysophos endpoint list --all-pages --output csv -f endpoints.csv
     """
     formatter = OutputFormatter(color_enabled=not no_color)
@@ -73,21 +169,70 @@ def endpoint_list(
     # Load configuration
     config = load_config()
 
-    # Build filters
+    # Build filters - create if any filter is specified
     filters = None
-    if health_status or endpoint_type:
+    if any(
+        [
+            health_status,
+            endpoint_type,
+            lockdown_status,
+            tamper_protection is not None,
+            hostname_contains,
+            last_seen_before,
+            last_seen_after,
+            ids,
+            ip_addresses,
+            mac_addresses,
+            search,
+        ]
+    ):
         filters = EndpointFilters()
+        filters.view = view
+        filters.page_size = page_size
+
+        # Enum filters
         if health_status:
-            filters.health_status = [HealthStatus(health_status)]
+            filters.health_status = HealthStatus(health_status)
         if endpoint_type:
-            filters.type = endpoint_type
+            filters.type = EndpointType(endpoint_type)
+        if lockdown_status:
+            filters.lockdown_status = LockdownStatus(lockdown_status)
+
+        # Boolean filter
+        if tamper_protection is not None:
+            filters.tamper_protection_enabled = tamper_protection
+
+        # String filters
+        if hostname_contains:
+            filters.hostname_contains = hostname_contains
+        if search:
+            filters.search = search
+
+        # Date filters
+        if last_seen_before:
+            filters.last_seen_before = datetime.fromisoformat(last_seen_before)
+        if last_seen_after:
+            filters.last_seen_after = datetime.fromisoformat(last_seen_after)
+
+        # List filters (comma-separated strings)
+        if ids:
+            filters.ids = [id.strip() for id in ids.split(",")]
+        if ip_addresses:
+            filters.ip_addresses = [ip.strip() for ip in ip_addresses.split(",")]
+        if mac_addresses:
+            filters.mac_addresses = [mac.strip() for mac in mac_addresses.split(",")]
+    else:
+        # No filters specified, but still set view and page_size
+        filters = EndpointFilters()
+        filters.view = view
+        filters.page_size = page_size
 
     # Fetch data
     if sync:
         with create_endpoint_api_sync(config) as api:
             if all_pages:
                 endpoints = []
-                for endpoint in api.paginate(page_size=page_size, filters=filters):
+                for endpoint in api.paginate(filters=filters):
                     endpoints.append(endpoint)
             else:
                 response = api.list_endpoints(filters=filters)
@@ -112,9 +257,7 @@ def endpoint_list(
                 api = EndpointAPI(http_client)
                 if all_pages:
                     endpoints = []
-                    async for endpoint in api.paginate(
-                        page_size=page_size, filters=filters
-                    ):
+                    async for endpoint in api.paginate(filters=filters):
                         endpoints.append(endpoint)
                     return endpoints
                 response = await api.list_endpoints(filters=filters)
