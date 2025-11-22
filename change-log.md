@@ -11,13 +11,15 @@ All notable changes to this project will be documented in this file.
   - `plans/PHASE10_SUMMARY.md` - Phase 10 status and completion summary
 
 ### Fixed
-- **Config Test**: Fixed `test_from_file_invalid_config` to use truly invalid TOML syntax
-  - Test was expecting `InvalidConfigError` but empty auth section has defaults
-  - Updated to test with malformed TOML (missing bracket)
-  - All 323 tests now passing
+- **Config Test**: Fixed `test_from_file_invalid_config` test logic *(Bug fix)*
+  - Test was incorrectly testing TOML parsing errors instead of config validation errors
+  - Changed from malformed TOML syntax to valid TOML with invalid config data (empty client_id)
+  - Now properly tests the "Invalid configuration" error path (validation errors)
+  - This ensures proper separation: `test_from_file_invalid_toml` tests parsing, `test_from_file_invalid_config` tests validation
+  - All 35 config tests passing, improved code coverage for validation path
 
 ### Status
-- ✅ **All 323 tests passing** with **75% coverage**
+- ✅ **All 35 config tests passing** with **95% config.py coverage**
 - ✅ **All code quality checks passing**
 - ✅ **Release documentation complete**
 - ✅ **Ready for user to update metadata and release**
