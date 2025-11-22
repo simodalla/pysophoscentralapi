@@ -162,7 +162,7 @@ class TestEndpointFilters:
         assert params["searchFields"] == "hostname,ipAddress"
 
     def test_filters_to_params_with_datetime(self):
-        """Test converting filters with datetime."""
+        """Test converting filters with datetime (timezone-aware)."""
         dt = datetime(2025, 11, 15, 10, 0, 0, tzinfo=timezone.utc)
         filters = EndpointFilters(last_seen_after=dt)
 
@@ -170,6 +170,23 @@ class TestEndpointFilters:
 
         assert "lastSeenAfter" in params
         assert "2025-11-15" in params["lastSeenAfter"]
+        # Timezone-aware datetime should include timezone info
+        assert "+" in params["lastSeenAfter"] or params["lastSeenAfter"].endswith("Z")
+
+    def test_filters_to_params_with_naive_datetime(self):
+        """Test converting filters with naive datetime (no timezone)."""
+        # Naive datetime (no timezone) - assumed to be UTC
+        dt = datetime(2024, 1, 1, 0, 0, 0)
+        filters = EndpointFilters(
+            last_seen_before=dt,
+            last_seen_after=dt,
+        )
+
+        params = filters.to_params()
+
+        # Naive datetimes should get 'Z' suffix for UTC
+        assert params["lastSeenBefore"] == "2024-01-01T00:00:00Z"
+        assert params["lastSeenAfter"] == "2024-01-01T00:00:00Z"
 
     def test_filters_to_params_with_boolean(self):
         """Test converting filters with boolean."""

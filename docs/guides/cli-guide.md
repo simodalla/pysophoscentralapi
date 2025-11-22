@@ -106,8 +106,8 @@ List endpoints with optional filtering.
 - `--lockdown-status [...]` - Filter by lockdown status (creatingWhitelist, installing, locked, notInstalled, registering, starting, stopping, unavailable, uninstalled, unlocked)
 - `--tamper-protection / --no-tamper-protection` - Filter by tamper protection status
 - `--hostname-contains TEXT` - Filter by hostname substring
-- `--last-seen-before TEXT` - Filter endpoints last seen before (ISO 8601: YYYY-MM-DDTHH:MM:SS)
-- `--last-seen-after TEXT` - Filter endpoints last seen after (ISO 8601: YYYY-MM-DDTHH:MM:SS)
+- `--last-seen-before TEXT` - Filter endpoints last seen before (ISO 8601: YYYY-MM-DDTHH:MM:SS, assumed UTC)
+- `--last-seen-after TEXT` - Filter endpoints last seen after (ISO 8601: YYYY-MM-DDTHH:MM:SS, assumed UTC)
 - `--ids TEXT` - Filter by endpoint IDs (comma-separated)
 - `--ip-addresses TEXT` - Filter by IP addresses (comma-separated)
 - `--mac-addresses TEXT` - Filter by MAC addresses (comma-separated)

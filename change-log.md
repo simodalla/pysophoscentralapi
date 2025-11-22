@@ -28,6 +28,11 @@ All notable changes to this project will be documented in this file.
   - Now properly tests the "Invalid configuration" error path (validation errors)
   - This ensures proper separation: `test_from_file_invalid_toml` tests parsing, `test_from_file_invalid_config` tests validation
   - All 35 config tests passing, improved code coverage for validation path
+- **Datetime Filters**: Fixed `--last-seen-before` and `--last-seen-after` filters returning 400 errors
+  - API requires ISO 8601 format with UTC timezone indicator ('Z' suffix)
+  - Naive datetimes (without timezone) are now automatically treated as UTC and formatted correctly
+  - Updated CLI help text to clarify that times are assumed to be UTC
+  - Files: `src/pysophoscentralapi/api/endpoint/models.py`, `src/pysophoscentralapi/cli/endpoint_cmds.py`
 
 ### Status
 - ✅ **All 35 config tests passing** with **95% config.py coverage**

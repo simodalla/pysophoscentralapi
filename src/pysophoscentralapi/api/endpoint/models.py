@@ -241,7 +241,7 @@ class EndpointFilters(SophosBaseModel):
     search: str | None = None
     search_fields: list[str] | None = None
 
-    def to_params(self) -> dict[str, str]:
+    def to_params(self) -> dict[str, str]:  # noqa: PLR0912
         """Convert filters to API query parameters.
 
         Returns:
@@ -267,9 +267,21 @@ class EndpointFilters(SophosBaseModel):
         if self.lockdown_status:
             params["lockdownStatus"] = str(self.lockdown_status)
         if self.last_seen_before:
-            params["lastSeenBefore"] = self.last_seen_before.isoformat()
+            # Convert to UTC and format with 'Z' suffix for API compatibility
+            dt = self.last_seen_before
+            if dt.tzinfo is None:
+                # Assume naive datetime is UTC
+                params["lastSeenBefore"] = f"{dt.isoformat()}Z"
+            else:
+                params["lastSeenBefore"] = dt.isoformat()
         if self.last_seen_after:
-            params["lastSeenAfter"] = self.last_seen_after.isoformat()
+            # Convert to UTC and format with 'Z' suffix for API compatibility
+            dt = self.last_seen_after
+            if dt.tzinfo is None:
+                # Assume naive datetime is UTC
+                params["lastSeenAfter"] = f"{dt.isoformat()}Z"
+            else:
+                params["lastSeenAfter"] = dt.isoformat()
         if self.hostname_contains:
             params["hostnameContains"] = self.hostname_contains
         if self.search:

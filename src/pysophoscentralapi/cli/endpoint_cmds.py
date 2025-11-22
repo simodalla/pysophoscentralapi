@@ -73,12 +73,12 @@ def endpoint() -> None:
 @click.option(
     "--last-seen-before",
     type=str,
-    help="Filter endpoints last seen before (ISO 8601: YYYY-MM-DDTHH:MM:SS)",
+    help="Filter endpoints last seen before (ISO 8601: YYYY-MM-DDTHH:MM:SS, assumed UTC)",
 )
 @click.option(
     "--last-seen-after",
     type=str,
-    help="Filter endpoints last seen after (ISO 8601: YYYY-MM-DDTHH:MM:SS)",
+    help="Filter endpoints last seen after (ISO 8601: YYYY-MM-DDTHH:MM:SS, assumed UTC)",
 )
 @click.option(
     "--ids",
