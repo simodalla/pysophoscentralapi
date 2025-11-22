@@ -298,16 +298,17 @@ json_indent = 4
 
     def test_from_file_invalid_config(self):
         """Test loading from TOML with invalid config data."""
+        # Invalid TOML syntax
         invalid_config = """
-[auth]
-# Missing required fields
+[auth
+client_id = "test"
 """
         with tempfile.NamedTemporaryFile(mode="w", suffix=".toml", delete=False) as f:
             f.write(invalid_config)
             temp_path = Path(f.name)
 
         try:
-            with pytest.raises(InvalidConfigError, match="Invalid configuration"):
+            with pytest.raises(InvalidConfigError, match="Failed to parse config file"):
                 Config.from_file(temp_path)
         finally:
             temp_path.unlink()

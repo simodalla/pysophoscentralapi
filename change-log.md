@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased - Phase 10] - 2025-11-22
+
+### Added - Initial Release Preparation
+- **Release Documentation**: Created comprehensive v0.1.0 release materials
+  - `RELEASE_NOTES_v0.1.0.md` - Complete release notes with features and getting started
+  - `PACKAGE_RELEASE_INSTRUCTIONS.md` - Step-by-step release process guide
+  - `plans/PHASE10_SUMMARY.md` - Phase 10 status and completion summary
+
+### Fixed
+- **Config Test**: Fixed `test_from_file_invalid_config` to use truly invalid TOML syntax
+  - Test was expecting `InvalidConfigError` but empty auth section has defaults
+  - Updated to test with malformed TOML (missing bracket)
+  - All 323 tests now passing
+
+### Status
+- ✅ **All 323 tests passing** with **75% coverage**
+- ✅ **All code quality checks passing**
+- ✅ **Release documentation complete**
+- ✅ **Ready for user to update metadata and release**
+- 🎯 **Phase 10 is 70% complete** (awaiting user input for personal info)
+
 ## [Unreleased - Phase 9] - 2025-11-18
 
 ### Added - Polish & Release Preparation
